@@ -448,14 +448,14 @@ to improve recommendation accuracy.
 
 # 🌟 Special Highlights
 
-✅ Modern gaming-inspired UI
-✅ Progressive AI integration
-✅ Personalized recommendation engine
-✅ Recommendation system architecture
-✅ Machine learning concepts
-✅ TensorFlow deep learning integration *(planned)*
-✅ Modular backend structure
-✅ Real-world system design learning
+- Modern gaming-inspired UI 
+- Progressive AI integration
+- Personalized recommendation engine
+- Recommendation system architecture
+- Machine learning concepts
+- TensorFlow deep learning integration *(planned)*
+- Modular backend structure
+- Real-world system design learning
 
 ---
 
@@ -475,10 +475,10 @@ to improve recommendation accuracy.
 
 | Service    | Platform                                                                                         |
 | ---------- | ------------------------------------------------------------------------------------------------ |
-| Frontend   | [Vercel](https://vercel.com?utm_source=chatgpt.com)                                              |
-| Backend    | [Render](https://render.com?utm_source=chatgpt.com)                                              |
-| ML Service | [Railway](https://railway.app?utm_source=chatgpt.com)                                            |
-| Database   | [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database?utm_source=chatgpt.com) |
+| Frontend   | [Vercel](https://vercel.com)                                                                     |
+| Backend    | [Render](https://render.com)                                                                     |
+| ML Service | [Railway](https://railway.app)                                                                   |
+| Database   | [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database)                        |
 
 ---
 
@@ -490,7 +490,7 @@ MERN & AI Enthusiast
 
 ---
 
-<div align="center">
+<div>
 
 # ⭐ Final Vision
 
