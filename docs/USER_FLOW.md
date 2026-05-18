@@ -1,32 +1,29 @@
 # User Flow
 
-This document describes the typical journey of a gamer using the **GameMind AI** platform.
+This document describes the typical journey of a user on the **GameMind AI** unified entertainment platform.
 
 ## 1. Onboarding
-1. **Landing Page**: The user arrives at the platform and sees a showcase of trending games and platform features.
+1. **Landing Page**: The user arrives at the platform and sees a showcase of trending movies and games seamlessly blended.
 2. **Registration**: The user creates an account by providing an email, username, and password. 
-3. **Initial Preferences (Optional)**: The user selects 3-5 favorite game genres or tags (e.g., RPG, FPS, Open World) to cold-start the recommendation engine.
+3. **Initial Preferences (Optional)**: The user selects 3-5 favorite genres or tags (e.g., Sci-Fi, RPG, Thriller) to cold-start the basic recommendation logic.
 
 ## 2. Discovery & Browsing
-1. **Home Dashboard**: Upon logging in, the user sees curated horizontal rows of games:
-   * *Trending Now*
+1. **Home Dashboard**: Upon logging in, the user sees curated horizontal rows:
+   * *Trending Now (Movies & Games)*
    * *Top Rated*
-   * *Recommended for You* (Once enough data is gathered)
-2. **Search**: The user uses the search bar to find a specific game by title.
-3. **Filtering**: The user filters the catalog to only show "Action RPG" games.
+   * *Critic Picks*
+   * *Recommended for You*
+2. **Search**: The user uses the search bar for "Cyberpunk" and sees results for both the game *Cyberpunk 2077* and the anime series *Cyberpunk: Edgerunners*.
+3. **Filtering**: The user filters the catalog to only show "Psychological Thrillers".
 
 ## 3. Interaction
-1. **Game Details**: The user clicks on a game card to view its detailed page (description, developer, tags, trailer).
+1. **Content Details**: The user clicks on a content card to view rich metadata (description, developer/studio, tags, trailer).
 2. **Actions**:
-   * **Add to Wishlist**: The user saves the game for later.
-   * **Rate/Like**: The user rates the game 5 stars.
-   * **Mark as Played**: The user adds the game to their gameplay history.
+   * **Add to Wishlist**: The user saves the content for later.
+   * **Rate / Favorite**: The user rates the content 5 stars and marks it as a "Favorite".
+   * **Mark as Viewed/Played**: The user adds the content to their history.
 
-## 4. AI Recommendation Generation (Background)
-1. **Data Logging**: The backend records the user's 5-star rating and the "played" action.
-2. **Model Trigger**: The Python ML service processes this new interaction.
-3. **Update**: The user's *"Recommended for You"* feed dynamically updates to feature games with similar mechanics or games enjoyed by other users with similar tastes.
-
-## 5. Retention
-1. **Returning User**: The user returns a week later.
-2. **Personalized Feed**: The dashboard now heavily highlights games matching the user's specific established patterns (e.g., pushing more single-player story-driven games to the top based on their history).
+## 4. Recommendation Generation (Backend Logic)
+1. **Data Logging**: The Node.js backend records the user's 5-star rating and the "favorite" action in the database.
+2. **Dynamic Update**: When the user requests their dashboard, the backend recalculates their hybrid recommendation score on the fly using database queries matching tags, genres, and similar user ratings.
+3. **Result**: The *"Recommended for You"* feed dynamically updates to feature similar movies and games based on the new data points.

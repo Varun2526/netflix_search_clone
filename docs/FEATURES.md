@@ -1,53 +1,38 @@
 # Application Features
 
-**GameMind AI** is rolled out in progressive versions, focusing initially on a solid foundation and expanding into advanced AI concepts.
+**GameMind AI** combines movies and games into a single intelligent discovery ecosystem. 
 
-## Version 1: MERN Foundation
+## Version 1: MERN Foundation & Logic Recommendations
 
 ### 🔐 Authentication System
 * User Registration and Login.
 * Secure JWT-based authentication.
-* Protected routes for authenticated gamers.
+* Protected routes for authenticated users.
 
-### 🎮 Gaming Platform UI
-* Modern, dark-themed UI inspired by Steam and Xbox Game Pass.
-* Responsive layouts for desktop and mobile.
+### 🎮🎬 Unified Entertainment Platform UI
+* Dark, modern, cinematic theme inspired by Steam and Netflix.
+* Responsive layouts featuring hero banners and unified recommendation rows.
 * Smooth animations and interactive hover states.
 
-### 🕹️ Game Discovery
-* **Game Catalog**: Browse a wide library of games.
-* **Game Details**: View rich metadata including descriptions, genres, tags, developer info, and average ratings.
-* **Search & Filter**: Search by title or filter by specific game genres.
+### 🔍 Search & Discovery
+* **Unified Catalog**: Search movies and games together.
+* **Content Details**: View rich content metadata including descriptions, genres, tags, developer/studio information, and average ratings.
+* **Filter & Browse**: Browse by trending content, top-rated content, critic picks, or specific genres.
 
 ### 👤 User Profile & Interaction
-* **Wishlist**: Save games for future reference.
-* **Ratings & Likes**: Rate games on a 1-5 scale or mark as "liked".
-* **Gameplay History**: Keep track of recently played games.
+* **Wishlist**: Save content (movies/games) for later.
+* **Ratings & Favorites**: Rate content on a 1-5 scale or mark as "favorite".
+* **Content History**: Keep track of recently played or viewed content.
+
+### 🧠 Logic-Based Recommendation System
+* **Content-Based Filtering**: Recommend similar content using genres, tags, categories, and metadata overlap (e.g., if a user likes psychological thrillers, recommend similar movies and games).
+* **Basic Collaborative Filtering**: Uses backend logic and database aggregations to find ratings overlap (e.g., "Users who liked Interstellar also liked Cyberpunk 2077").
+* **Hybrid Ranking**: Combines content similarity, collaborative overlap, and popularity into a single mathematical ranking formula in the Node.js backend.
 
 ---
 
-## Version 2: AI Recommendation System
+## Future Enhancements (Version 2+)
 
-### 🧠 Content-Based Filtering
-* Recommends games similar to those a user already likes based on metadata (tags, genres, mechanics).
-* Powers features like *"Games similar to X"* or *"Because you played Y"*.
-
-### 🤝 Collaborative Filtering
-* Recommends games based on the behavior of similar gamers.
-* Powers features like *"Gamers who liked X also liked Y"*.
-
-### 📈 Behavior Tracking
-* Tracks implicit feedback such as interaction frequency, playtime patterns, and favorite genres to continually tune recommendations.
-
----
-
-## Version 3: Advanced Deep Learning
-
-### 🔥 Neural Collaborative Filtering (TensorFlow)
-* Uses deep learning embeddings to map users and games in a latent space, uncovering complex, non-linear relationships.
-
-### 🔀 Hybrid Engine
-* Combines content-based, collaborative, and neural models into a single weighted score for maximum accuracy.
-
-### 💡 Explainable AI
-* Provides transparency on *why* a game was recommended (e.g., *"Recommended because you enjoy open-world RPGs"*).
+* **Python ML microservice built using FastAPI.**
+* **Advanced Content-Based Filtering**: Uses TF-IDF vectorization and cosine similarity to measure content similarity.
+* **Deep Learning Integration**: TensorFlow-based neural collaborative filtering and user/content embeddings.

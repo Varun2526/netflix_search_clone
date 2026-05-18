@@ -1,31 +1,25 @@
 # Technical Architecture
 
-## AI-Powered Game Recommendation System
+## Unified Entertainment Recommendation Platform (Version 1)
 
-### Using MERN Stack, TensorFlow & Machine Learning
+### Using MERN Stack & Logic-Based Recommendations
 
 ---
 
 # 1. Introduction
 
-The **GameMind AI** Platform is a full-stack web application designed to provide personalized video game recommendations based on user behavior, preferences, ratings, and interaction history.
+The **GameMind AI** Platform is a full-stack web application designed to provide unified entertainment recommendations (both movies and games) based on user behavior, preferences, ratings, and interaction history.
 
-The system combines:
-* **MERN Stack** for full-stack web development.
-* **Machine Learning** for recommendation generation.
-* **TensorFlow** for deep learning-based personalization.
-* Scalable service-oriented architecture.
-
-The platform simulates the recommendation workflows used in modern gaming storefronts like Steam, Xbox Game Pass, and Epic Games Store, focusing purely on the recommendation and behavioral analysis engine.
+Version 1 is focused on building a highly scalable, realistic MERN platform that implements recommendation logic via backend algorithms and database queries without introducing unnecessary microservices or machine learning complexity.
 
 ---
 
-# 2. High-Level Architecture
+# 2. High-Level Architecture (Version 1)
 
 ```text
                  ┌────────────────────┐
                  │   React Frontend   │
-                 │ Modern Gaming UI   │
+                 │ Modern Unified UI  │
                  └─────────┬──────────┘
                            │
                       REST APIs
@@ -35,17 +29,10 @@ The platform simulates the recommendation workflows used in modern gaming storef
                  │ Express + MVC APIs │
                  └─────────┬──────────┘
                            │
-           ┌───────────────┴───────────────┐
-           ▼                               ▼
-  ┌──────────────────┐         ┌────────────────────┐
-  │     MongoDB      │         │ Python ML Service  │
-  │  (Data Storage)  │         │(FastAPI + ML APIs) │
-  └──────────────────┘         └─────────┬──────────┘
-                                         │
-                               ┌─────────▼──────────┐
-                               │ TensorFlow/Keras   │
-                               │ Deep Learning Recs │
-                               └────────────────────┘
+                 ┌─────────▼──────────┐
+                 │     MongoDB        │
+                 │  (Data Storage)    │
+                 └────────────────────┘
 ```
 
 ---
@@ -56,10 +43,10 @@ The frontend is developed using **React.js** and follows a component-based archi
 
 ## Responsibilities
 * User authentication (Login/Register)
-* Game catalog browsing and searching
-* Displaying personalized game recommendations
-* Wishlist management
-* Tracking gameplay history and user interactions
+* Unified content catalog browsing (movies and games together)
+* Displaying logic-based recommendations
+* Wishlist and Favorites management
+* Tracking content history and user interactions
 
 ## Technologies
 * **React.js**: UI Development
@@ -72,14 +59,14 @@ The frontend is developed using **React.js** and follows a component-based archi
 
 # 4. Backend Architecture
 
-The backend is built using **Node.js** and **Express.js**. It acts as the central API gateway connecting the frontend, database, and machine learning services.
+The backend is built using **Node.js** and **Express.js**. It acts as the central API gateway connecting the frontend and the database, while also housing the core recommendation logic.
 
 ## Responsibilities
 * Authentication & authorization (JWT)
-* REST API endpoints for user and game data
+* REST API endpoints for user and content data
 * Database read/write operations
-* User activity logging (playtime, ratings, interactions)
-* Forwarding recommendation requests to the ML service
+* User activity logging (viewtime, playtime, ratings)
+* Processing hybrid recommendation algorithms using database aggregation and logic filtering
 
 ## Technologies
 * **Node.js & Express.js**: Runtime and REST API framework
@@ -88,25 +75,17 @@ The backend is built using **Node.js** and **Express.js**. It acts as the centra
 
 ---
 
-# 5. Machine Learning Architecture
+# 5. Recommendation Logic (Version 1)
 
-The ML service is implemented separately using Python to maintain modularity and leverage Python's rich data science ecosystem.
-
-## Recommendation Pipeline
-
-```text
-User Gameplay Activity → MongoDB → Data Preprocessing → Recommendation Engine → TensorFlow Prediction → Personalized Results
-```
+Instead of machine learning, Version 1 handles recommendations efficiently within the Node.js backend using database queries and weighting algorithms.
 
 ## Algorithms Used
-1. **Content-Based Filtering**: TF-IDF and Cosine Similarity on game genres, descriptions, tags, and mechanics.
-2. **Collaborative Filtering**: Finding similar gamers based on interaction patterns.
-3. **Neural Collaborative Filtering**: Deep learning models using user and game embeddings.
+1. **Content-Based Filtering**: Recommends similar content using metadata overlap (genres, tags, categories).
+2. **Basic Collaborative Filtering**: Implements simple collaborative logic using ratings overlap and wishlist overlap via MongoDB aggregations.
+3. **Hybrid Engine**: Calculates a final ranking score: `finalScore = (0.5 × contentScore) + (0.3 × collaborativeScore) + (0.2 × popularityScore)`.
 
 ---
 
-# 6. Scalability & Deployment
+# 6. Future Architecture (Version 2)
 
-* **Stateless REST APIs**: Enables horizontal scaling of the Node.js backend.
-* **Microservices**: Decoupling the ML service from the core web backend.
-* **Caching**: Future implementation of Redis for caching expensive recommendation computations.
+Future versions will extract the recommendation logic into an independent Python ML microservice built using FastAPI. It will leverage TF-IDF vectorization and cosine similarity, eventually introducing TensorFlow for Neural Collaborative Filtering.
