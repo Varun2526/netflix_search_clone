@@ -1,8 +1,6 @@
-# 🎮 GameMind AI
-
-### Intelligent Game Recommendation Platform
-
-*Progressive Full-Stack MERN + AI Learning Project*
+# 🧠 NeuroPlay
+Intelligent Gaming Recommendation System<br>
+*     - Progressive Full-Stack MERN + AI Learning Project*
 
 ---
 
