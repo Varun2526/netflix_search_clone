@@ -1,6 +1,6 @@
 # System Component Roles
 
-The **GameMind AI** (Version 1) architecture is strictly modular and focused on strong MERN principles without overengineering.
+The **Kario** (Version 1) architecture is strictly modular and focused on strong MERN principles without overengineering.
 
 ## 1. Frontend Client (React.js)
 **Role**: The Presentation and Interaction Layer.

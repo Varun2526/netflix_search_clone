@@ -1,6 +1,6 @@
 # MVC Architectural Pattern
 
-The Node.js backend of **GameMind AI** strictly follows the **Model-View-Controller (MVC)** design pattern, adapted for a RESTful API architecture where the "View" is handled by the React frontend.
+The Node.js backend of **Kairo** strictly follows the **Model-View-Controller (MVC)** design pattern, adapted for a RESTful API architecture where the "View" is handled by the React frontend.
 
 ## 1. Models (Data Layer)
 Models represent the data structures and business logic rules. They are implemented using **Mongoose** schemas.

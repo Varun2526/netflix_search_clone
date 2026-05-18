@@ -1,6 +1,6 @@
 # Entity Relationship (ER) Diagram
 
-The database uses MongoDB. Below is the relational structure of the main entities in the **GameMind AI** application (Version 1).
+The database uses MongoDB. Below is the relational structure of the main entities in the **Kairo** application (Version 1).
 
 ```mermaid
 erDiagram

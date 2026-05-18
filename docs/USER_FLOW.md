@@ -1,6 +1,6 @@
 # User Flow
 
-This document describes the typical journey of a user on the **GameMind AI** unified entertainment platform.
+This document describes the typical journey of a user on the **Kairo** unified entertainment platform.
 
 ## 1. Onboarding
 1. **Landing Page**: The user arrives at the platform and sees a showcase of trending movies and games seamlessly blended.

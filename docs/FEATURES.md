@@ -1,6 +1,6 @@
 # Application Features
 
-**GameMind AI** combines movies and games into a single intelligent discovery ecosystem. 
+**Kairo** combines movies and games into a single intelligent discovery ecosystem. 
 
 ## Version 1: MERN Foundation & Logic Recommendations
 

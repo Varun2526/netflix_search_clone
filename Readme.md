@@ -1,4 +1,4 @@
-# 🎮🎬 GameMind AI
+# 🎮🎬 Kairo
 
 ### Unified Entertainment Recommendation Platform
 
@@ -19,7 +19,7 @@
 
 # 📌 Project Overview
 
-**GameMind AI** is a full-stack entertainment recommendation platform that combines both **movies** and **games** into a single intelligent discovery ecosystem. 
+**Kairo** is a full-stack entertainment recommendation platform that combines both **movies** and **games** into a single intelligent discovery ecosystem. 
 
 Inspired by recommendation systems used in Netflix, Steam, Xbox Game Pass, and Amazon, the platform provides a unified "content" experience. For example, if a user searches for "Thriller", the platform intelligently displays thriller movies, thriller games, trending content, and critic picks in one combined view.
 

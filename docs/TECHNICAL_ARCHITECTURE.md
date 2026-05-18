@@ -8,7 +8,7 @@
 
 # 1. Introduction
 
-The **GameMind AI** Platform is a full-stack web application designed to provide unified entertainment recommendations (both movies and games) based on user behavior, preferences, ratings, and interaction history.
+The **Kairo** Platform is a full-stack web application designed to provide unified entertainment recommendations (both movies and games) based on user behavior, preferences, ratings, and interaction history.
 
 Version 1 is focused on building a highly scalable, realistic MERN platform that implements recommendation logic via backend algorithms and database queries without introducing unnecessary microservices or machine learning complexity.
 
