@@ -1,0 +1,118 @@
+@baseUrl = http://localhost:3131/api
+
+
+### ═══════════════════════════════════════════
+### 🏥 HEALTH CHECK
+### ═══════════════════════════════════════════
+
+GET http://localhost:3131/
+
+
+### ═══════════════════════════════════════════
+### 🔐 AUTH — REGISTER
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "varun",
+  "email": "varun@test.com",
+  "password": "test1234"
+}
+
+
+### ═══════════════════════════════════════════
+### 🔐 AUTH — REGISTER (missing fields — 400)
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "varun"
+}
+
+
+### ═══════════════════════════════════════════
+### 🔐 AUTH — REGISTER (duplicate — 409)
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "varun",
+  "email": "varun@test.com",
+  "password": "test1234"
+}
+
+
+### ═══════════════════════════════════════════
+### 🔑 AUTH — LOGIN
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "varun@test.com",
+  "password": "test1234"
+}
+
+
+### ═══════════════════════════════════════════
+### 🔑 AUTH — LOGIN (wrong password — 401)
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "varun@test.com",
+  "password": "wrongpassword"
+}
+
+
+### ═══════════════════════════════════════════
+### 🔑 AUTH — LOGIN (user not found — 404)
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nobody@test.com",
+  "password": "test1234"
+}
+
+
+### ═══════════════════════════════════════════
+### 🚪 AUTH — LOGOUT
+### ═══════════════════════════════════════════
+
+POST {{baseUrl}}/auth/logout
+
+
+### ═══════════════════════════════════════════
+### 🔵 AUTH — GOOGLE (needs real credential)
+### ═══════════════════════════════════════════
+
+# POST {{baseUrl}}/auth/google
+# Content-Type: application/json
+
+# {
+#   "credential": "YOUR_GOOGLE_ID_TOKEN_HERE"
+# }
+
+
+### ═══════════════════════════════════════════
+### ⚫ AUTH — GITHUB (needs real code)
+### ═══════════════════════════════════════════
+
+# POST {{baseUrl}}/auth/github
+# Content-Type: application/json
+
+# {
+#   "code": "YOUR_GITHUB_AUTH_CODE_HERE"
+# }
