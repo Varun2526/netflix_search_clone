@@ -12,28 +12,21 @@ export const googleAuth = async (req, res) => {
     let payload;
 
     if (credential) {
-      const ticket = await client.verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
-      payload = ticket.getPayload();
-    } else if (access_token) {
-      const response = await fetch(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: { Authorization: `Bearer ${access_token}` },
-        }
-      );
-      payload = await response.json();
-      if (payload.error) {
-        return res.status(400).json({ error: "Invalid Google access token" });
-      }
-    } else {
-      return res.status(400).json({ error: "Google credential missing" });
+        const ticket = await client.verifyIdToken({idToken: credential,audience: process.env.GOOGLE_CLIENT_ID,});
+        payload = ticket.getPayload();
     }
-
+    else if (access_token) {
+        const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo",
+                                  {headers: { Authorization: `Bearer ${access_token}` },});
+        payload = await response.json();
+        if (payload.error) {
+          return res.status(400).json({ error: "Invalid Google access token" });
+        }
+    }
+    else {
+        return res.status(400).json({ error: "Google credential missing" });
+    }
     const { email, name, picture, sub } = payload;
-
     let user = await User.findOne({ email });
 
     if (!user) {
@@ -46,27 +39,20 @@ export const googleAuth = async (req, res) => {
         counter++;
       }
 
-      user = new User({
-        username: uniqueUsername,
-        email,
-        avatar: picture,
-        providers: [{ name: "google", providerId: sub }],
-      });
+      user = new User({username: uniqueUsername,email,avatar: picture,
+                            providers: [{ name: "google", providerId: sub }],});
       await user.save();
-    } else {
-      const hasGoogle = user.providers.some((p) => p.name === "google");
-      if (!hasGoogle) {
-        user.providers.push({ name: "google", providerId: sub });
-        if (!user.avatar) user.avatar = picture;
-        await user.save();
-      }
+    }
+    else {
+        const hasGoogle = user.providers.some((p) => p.name === "google");
+        if (!hasGoogle) {
+          user.providers.push({ name: "google", providerId: sub });
+          if (!user.avatar) user.avatar = picture;
+          await user.save();
+        }
     }
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user._id },process.env.JWT_SECRET,{ expiresIn: "7d" });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -74,16 +60,9 @@ export const googleAuth = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
-    res.status(200).json({
-      message: "Google Login successful",
-      payload: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar,
-      },
-    });
-  } catch (error) {
+    res.status(200).json({message: "Google Login successful",payload: {id: user._id,username: user.username,email: user.email,avatar: user.avatar,},});
+  } 
+  catch (error) {
     console.error("Error in Google Auth:", error);
     res.status(500).json({ error: "Google Authentication Failed" });
   }
@@ -111,20 +90,11 @@ export const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // creating user
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword,
-      providers: [{ name: "local" }],
-    });
+    const newUser = new User({username,email,password: hashedPassword,providers: [{ name: "local" }],});
     await newUser.save();
 
     // generate jwt token
-    const token = jwt.sign(
-      { userId: newUser._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: newUser._id },process.env.JWT_SECRET,{ expiresIn: "7d" });
 
     // send cookie
     res.cookie("token", token, {
@@ -133,19 +103,16 @@ export const register = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
-    res.status(201).json({
-      message: "User registered successfully",
-      payload: {
-        id: newUser._id,
-        username: newUser.username,
-        email: newUser.email,
-      },
-    });
-  } catch (error) {
+    res.status(201).json({message: "User registered successfully",payload: {id: newUser._id,username: newUser.username,email: newUser.email,},});
+  } 
+  catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
+
+
+
 
 // ── LOGIN ──
 export const login = async (req, res) => {
@@ -174,12 +141,7 @@ export const login = async (req, res) => {
     }
 
     // 4. Generate token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
+    const token = jwt.sign({ userId: user._id },process.env.JWT_SECRET,{ expiresIn: "7d" });
     // 5. Send cookie
     res.cookie("token", token, {
       httpOnly: true,
@@ -188,19 +150,16 @@ export const login = async (req, res) => {
     });
 
     // 6. Response
-    res.status(200).json({
-      message: "Login successful",
-      payload: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-      },
-    });
-  } catch (error) {
+    res.status(200).json({message: "Login successful",payload: {id: user._id,username: user.username,email: user.email,}});
+  }
+  catch (error) {
     console.error("Error logging in user:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
+
+
+
 
 // ── LOGOUT ──
 export const logout = (req, res) => {
@@ -211,6 +170,8 @@ export const logout = (req, res) => {
   });
   res.status(200).json({ message: "Logout successful" });
 };
+
+
 
 // ── GITHUB AUTH ──
 export const githubAuth = async (req, res) => {
@@ -239,33 +200,22 @@ export const githubAuth = async (req, res) => {
 
     const tokenData = await tokenResponse.json();
     if (tokenData.error) {
-      return res
-        .status(400)
-        .json({ error: tokenData.error_description || "GitHub OAuth failed" });
+      return res.status(400).json({ error: tokenData.error_description || "GitHub OAuth failed" });
     }
 
     const accessToken = tokenData.access_token;
 
     // 2. Fetch user profile from GitHub
-    const userResponse = await fetch("https://api.github.com/user", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
+    const userResponse = await fetch("https://api.github.com/user", {headers: { Authorization: `Bearer ${accessToken}` },});
     const githubUser = await userResponse.json();
 
     // 3. Fetch user emails from GitHub (since email might be private)
-    const emailsResponse = await fetch("https://api.github.com/user/emails", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
-
+    const emailsResponse = await fetch("https://api.github.com/user/emails", {headers: { Authorization: `Bearer ${accessToken}` },});
     const githubEmails = await emailsResponse.json();
-    const primaryEmailObj =
-      githubEmails.find((email) => email.primary) || githubEmails[0];
+    const primaryEmailObj = githubEmails.find((email) => email.primary) || githubEmails[0];
 
     if (!primaryEmailObj) {
-      return res
-        .status(400)
-        .json({ error: "No email associated with GitHub account" });
+      return res.status(400).json({ error: "No email associated with GitHub account" });
     }
 
     const email = primaryEmailObj.email;
@@ -293,7 +243,8 @@ export const githubAuth = async (req, res) => {
         providers: [{ name: "github", providerId: sub }],
       });
       await user.save();
-    } else {
+    }
+    else {
       const hasGithub = user.providers.some((p) => p.name === "github");
       if (!hasGithub) {
         user.providers.push({ name: "github", providerId: sub });
@@ -303,11 +254,7 @@ export const githubAuth = async (req, res) => {
     }
 
     // 5. Generate token and set cookie
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ userId: user._id },process.env.JWT_SECRET,{ expiresIn: "7d" });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -315,16 +262,15 @@ export const githubAuth = async (req, res) => {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
-    res.status(200).json({
-      message: "GitHub Login successful",
-      payload: {
+    res.status(200).json({message: "GitHub Login successful",payload: {
         id: user._id,
         username: user.username,
         email: user.email,
         avatar: user.avatar,
       },
     });
-  } catch (error) {
+  }
+  catch (error) {
     console.error("Error in GitHub Auth:", error);
     res.status(500).json({ error: "GitHub Authentication Failed" });
   }

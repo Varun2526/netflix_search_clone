@@ -5,10 +5,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-/**
- * Parse a CSV line that may contain quoted fields with commas inside.
- * Handles: "Action,Adventure,Sci-Fi" as a single field.
- */
+
 function parseCSVLine(line) {
   const fields = [];
   let current = "";
@@ -19,10 +16,12 @@ function parseCSVLine(line) {
 
     if (char === '"') {
       inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
+    } 
+    else if (char === "," && !inQuotes) {
       fields.push(current.trim());
       current = "";
-    } else {
+    } 
+    else {
       current += char;
     }
   }
@@ -34,17 +33,10 @@ function parseCSVLine(line) {
 
 /**
  * Transform raw IMDB CSV data into Content model objects.
- *
- * CSV Columns:
- * Rank, Title, Genre, Description, Director, Actors, Year,
- * Runtime (Minutes), Rating, Votes, Revenue (Millions), Metascore
- *
- * @returns {Array} Array of plain objects ready for Content.insertMany()
- */
+ * CSV Columns: Rank, Title, Genre, Description, Director, Actors, Year,Runtime (Minutes), Rating, Votes, Revenue (Millions), Metascore*/
 export function transformIMDB() {
   const csvPath = resolve(__dirname, "../raw/imdb/IMDB-Movie-Data.csv");
   const raw = readFileSync(csvPath, "utf-8");
-
   const lines = raw.split("\n").filter((line) => line.trim() !== "");
 
   // Skip header row
