@@ -21,14 +21,27 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
       minlength: 6,
+      // NOT required — OAuth users (Google/GitHub) won't have a password
     },
 
     avatar: {
       type: String,
       default: "",
     },
+
+    providers: [
+      {
+        name: {
+          type: String,
+          enum: ["local", "google", "github"],
+          required: true,
+        },
+        providerId: {
+          type: String,
+        },
+      },
+    ],
 
     favoriteGenres: {
       type: [String],
@@ -57,10 +70,6 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-// INDEXES
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
 
 const User = mongoose.model("User", userSchema);
 export default User;

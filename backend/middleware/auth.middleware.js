@@ -1,15 +1,25 @@
-import bcrypt from "bcrypt";
-
-export async function hashPassword(next) {
-  if (!this.isModified("password"))
-    return next();
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-}
+import jwt from "jsonwebtoken";
+import User from "../models/User.model.js";
 
 
-export async function comparePassword(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-}
+export const verifyToken = async (req, res, next) => {
+  try {
+    const token = req.cookies?.token;
+
+    if (!token) {
+      return res.status(401).json({ error: "Access denied. No token provided." });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid token. User not found." });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Invalid or expired token." });
+  }
+};
