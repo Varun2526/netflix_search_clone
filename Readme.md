@@ -154,6 +154,30 @@ project/
 
 ---
 
+# 💾 Data Management & Version Control Rules
+
+Because this project utilizes massive real-world datasets (e.g., a 400MB+ Steam dataset with over 122,000 games and IMDB datasets), strict version control rules are enforced to keep the GitHub repository clean and prevent size limit errors.
+
+**Strict Git Rules:**
+1. **Raw Datasets are Local-Only**: NEVER commit huge raw datasets (like `games.csv` or `imdb.csv`). They must remain locally on your machine forever.
+2. **Never blindly run `git add .`**: Always use targeted commands like `git add backend/` or `git add frontend/`.
+3. **Always check `git status`**: Before any commit or push, verify that no file larger than ~50MB is staged.
+4. **Gitignore is Enforced**: The `backend/data/raw/` directory is permanently added to `.gitignore`. Never override this.
+
+**Production Deployment & Seeding:**
+* **Local Development**: We use the full raw datasets to populate a robust local MongoDB for testing algorithms and search functionality.
+* **Production (MongoDB Atlas)**: To stay within the free-tier 512MB limit, we use a utility script (`backend/data/create-prod-seed.js`) that filters out only the highest-quality, most popular titles.
+* Only curated, lightweight seed files (like `filtered-production-seed.json`) may be committed and pushed to GitHub for deployment.
+
+**How to Setup Data Locally:**
+Since raw datasets are not tracked in Git, you must download them manually to run the full local seed:
+1. Download the [Steam Games Dataset](https://www.kaggle.com/datasets/fronkongames/steam-games-dataset) from Kaggle.
+2. Place the dataset at `backend/data/raw/steam/games.csv`.
+3. Ensure the IMDB dataset is at `backend/data/raw/imdb/IMDB-Movie-Data.csv`.
+4. Run `node --max-old-space-size=4096 data/seed.js` from the `backend/` directory to populate your local database.
+
+---
+
 # 📊 Database Collections & Data Models
 
 | Collection | Purpose |
