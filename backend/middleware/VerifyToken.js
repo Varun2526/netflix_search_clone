@@ -13,7 +13,7 @@ export const verifyToken = (...allowedRoles) => {
         return res.status(401).json({ message: "Please login first" });
       }
       //validate token(decode the token)
-      let decodedToken = verify(token, process.env.SECRET_KEY);
+      let decodedToken = verify(token, process.env.JWT_SECRET);
 
       // check the role is same as role in decodedToken
       if (!allowedRoles.includes(decodedToken.role)) {

@@ -2,6 +2,7 @@ import { config } from "dotenv";
 import mongoose from "mongoose";
 import Content from "../models/Content.model.js";
 import { transformIMDB } from "./transformers/imdb.transformer.js";
+import { transformSteam } from "./transformers/steam.transformer.js";
 
 config();
 const MONGO_URI = process.env.DB_URL;
@@ -16,13 +17,18 @@ async function seed() {
     const movies = transformIMDB();
     console.log(`Transformed ${movies.length} movies from IMDB CSV`);
 
-    // Clear existing content (optional — only movies) 
-    const deleted = await Content.deleteMany({ type: "movie" });
-    console.log(`Cleared ${deleted.deletedCount} existing movie documents`);
+    const games = transformSteam();
+    console.log(`Transformed ${games.length} games from Steam CSV`);
+
+    const allContent = [...movies, ...games];
+
+    // Clear existing content
+    const deleted = await Content.deleteMany({});
+    console.log(`Cleared ${deleted.deletedCount} existing documents`);
 
     // insert data
-    const inserted = await Content.insertMany(movies, { ordered: false });
-    console.log(`Seeded ${inserted.length} movies into the content collection`);
+    const inserted = await Content.insertMany(allContent, { ordered: false });
+    console.log(`Seeded ${inserted.length} content items (movies + games)`);
 
     // summary count
     const total = await Content.countDocuments();
