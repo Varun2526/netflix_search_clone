@@ -140,7 +140,7 @@ GET {{baseUrl}}/content/trending?type=game&limit=5
 GET {{baseUrl}}/content/search?query=matrix
 
 ### Search and filter by type (movies only)
-GET {{baseUrl}}/content/search?query=fight&type=movie
+GET {{baseUrl}}/content/search?query=matrix&type=game
 
 ### Search and filter by genre (e.g. Action)
 GET {{baseUrl}}/content/search?genre=Action
