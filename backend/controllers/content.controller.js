@@ -1,12 +1,56 @@
 import Content from "../models/Content.model.js";
 
-export const searchContent = async (req, res) => {
-    try {
-        const query = req.query.q;
-        const results = await Content.find({ $text: { $search: query } }).limit(20);
+// Search movies and games
+export const search = async (req, res) => {
+  try {
+    // get data from url
+    const { query, type, genre } = req.query;
+    // create empty object
+    const filters = {};
 
-        res.status(200).json({ success: true, results, });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message, });
+    // search by title
+    if (query) {
+        filters.title = {$regex: query,$options: "i"};
     }
+    // filter by movie or game
+    if (type) {
+        filters.type = type;
+    }
+    // filter by genre
+    if (genre) {
+        filters.genres = genre;
+    }
+
+    // find data from database
+    const data = await Content.find(filters).limit(20);
+    // send response
+    res.status(200).json({success: true,count: data.length,data: data,});
+  } 
+    catch (error) {
+        console.log("Error in search:", error);
+        res.status(500).json({ error: "Failed to search content" });
+  }
+};
+
+//get trending movies and games
+
+export const getTrending = async (req, res) => {
+  try {
+    //get data from url
+    const {type , limit =10} = req.query;
+    // create empty object
+    const filters = {};
+    // filter by movie or game
+    if(type){
+      filters.type = type;
+    }
+    // find data from database
+    const data = await Content.find(filters).sort({popularity: -1}).limit(parseInt(limit));
+    //send response
+    res.status(200).json({success: true, count: data.length, data: data,});
+  }
+  catch (error) {
+    console.log("Error in getTrending:", error);
+    res.status(500).json({ error: "Failed to get trending content" });
+  }
 };

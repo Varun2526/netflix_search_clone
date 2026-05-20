@@ -116,3 +116,31 @@ POST {{baseUrl}}/auth/logout
 # {
 #   "code": "YOUR_GITHUB_AUTH_CODE_HERE"
 # }
+
+
+### ═══════════════════════════════════════════
+### 🎬 CONTENT — TRENDING
+### ═══════════════════════════════════════════
+
+### Get all trending content
+GET {{baseUrl}}/content/trending
+
+### Get trending movies only
+GET {{baseUrl}}/content/trending?type=movie&limit=5
+
+### Get trending games only
+GET {{baseUrl}}/content/trending?type=game&limit=5
+
+
+### ═══════════════════════════════════════════
+### 🎬 CONTENT — SEARCH
+### ═══════════════════════════════════════════
+
+### Search content by title keyword (e.g. matrix)
+GET {{baseUrl}}/content/search?query=matrix
+
+### Search and filter by type (movies only)
+GET {{baseUrl}}/content/search?query=fight&type=movie
+
+### Search and filter by genre (e.g. Action)
+GET {{baseUrl}}/content/search?genre=Action

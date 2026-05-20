@@ -1,10 +1,11 @@
-import express from "express";
-import { searchContent } from "../controllers/content.controller.js";
+import { Router } from "express";
+import { getTrending, search } from "../controllers/content.controller.js";
 
-const router = express.Router();
+const router = Router();
 
 
-//all the routes related to the contents will be defined here
-router.get("/search", searchContent);
+//routes of content 
+router.get("/search", search);
+router.get("/trending", getTrending);
 
 export default router;
