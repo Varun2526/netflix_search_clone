@@ -2,6 +2,9 @@
 **/node_modules/
 node_modules/
 
+# Raw Datasets
+backend/data/raw/
+
 # Build outputs
 dist/
 build/
