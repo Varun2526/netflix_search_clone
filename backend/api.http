@@ -144,3 +144,8 @@ GET {{baseUrl}}/content/search?query=matrix&type=game
 
 ### Search and filter by genre (e.g. Action)
 GET {{baseUrl}}/content/search?genre=Action
+
+### get content details by id
+GET {{baseUrl}}/content/6a0d6ddf27306f6785eba5df
+
+
