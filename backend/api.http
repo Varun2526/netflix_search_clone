@@ -149,3 +149,11 @@ GET {{baseUrl}}/content/search?genre=Action
 GET {{baseUrl}}/content/6a0d6ddf27306f6785eba5df
 
 
+### get the histroy of the user
+POST {{baseUrl}}/content/history
+Content-Type: application/json
+
+{
+    "userId":"6a0c33cd192aac16eddde473",
+    "contentId":"6a0d6ddf27306f6785eba5df"
+}

@@ -33,7 +33,7 @@ const contentSchema = new mongoose.Schema(
       default: [],
     },
 
-    releaseDate: {
+    releaseYear: {
       type: Number,
     },
 
