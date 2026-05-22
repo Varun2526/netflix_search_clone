@@ -105,3 +105,60 @@ export const addToHistroy = async (req,res) =>{
 };
 
 
+export const addtoWishlist = async(req,res)=>{
+
+  try{
+      //find user id and content ifd from req body
+      const {userId,contentId} = req.body;
+      // user 
+      const user = await User.findById(userId)
+      //find user
+      if(!user){
+        return res.status(404).json({success:false,message:"User not found"})
+      }
+      //check content exists 
+      const content = await Content.findById(contentId);
+      if(!content){
+        return res.status(404).json({success:false,message:"content not found "})
+      }
+      //avoid duplicates
+      if(!user.wishlist.includes(contentId)){
+        user.wishlist.push(contentId);
+        await user.save();
+      }
+      res.status(200).json({success:true,message:"Content added to wishlist successfully"})
+}
+  catch(error){
+    console.log("Error in addtoWishlist:", error);
+    res.status(500).json({ error: "Failed to add content to wishlist" });
+}
+};
+
+export const removeFromWishlist = async (req, res) => {
+  try {
+    //get user id and content id from req body
+    const { userId, contentId } = req.body;
+    //find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    //check if content is in user's wishlist
+    if (user.wishlist.includes(contentId)) {
+      //remove the content from user's wishlist
+      user.wishlist = user.wishlist.filter(id => id.toString() !== contentId);
+      await user.save();
+    }
+    res.status(200).json({ success: true, message: "Content removed from wishlist successfully" });
+  } catch (error) {
+    console.log("Error in removeFromWishlist:", error);
+    res.status(500).json({ error: "Failed to remove content from wishlist" });
+  }
+};
+
+
+
+
+
+
+

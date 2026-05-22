@@ -157,3 +157,26 @@ Content-Type: application/json
     "userId":"6a0c33cd192aac16eddde473",
     "contentId":"6a0d6ddf27306f6785eba5df"
 }
+
+
+### add content to user's wishlist
+POST {{baseUrl}}/content/wishlist
+Content-Type: application/json
+
+{
+    "userId":"6a0c33cd192aac16eddde473",
+    "contentId":"6a0d6ddf27306f6785eba5df"
+}
+
+
+### remove content from user's wishlist
+
+
+
+POST {{baseUrl}}/content/wishlist/remove
+Content-Type: application/json
+
+{
+    "userId":"6a0c33cd192aac16eddde473",
+    "contentId":"6a0d6ddf27306f6785eba5df"
+}
