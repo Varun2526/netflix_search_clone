@@ -149,7 +149,7 @@ GET {{baseUrl}}/content/search?genre=Action
 GET {{baseUrl}}/content/6a0d6ddf27306f6785eba5df
 
 
-### get the histroy of the user
+### Add content to user history
 POST {{baseUrl}}/content/history
 Content-Type: application/json
 
@@ -170,10 +170,7 @@ Content-Type: application/json
 
 
 ### remove content from user's wishlist
-
-
-
-POST {{baseUrl}}/content/wishlist/remove
+DELETE {{baseUrl}}/content/wishlist/remove
 Content-Type: application/json
 
 {

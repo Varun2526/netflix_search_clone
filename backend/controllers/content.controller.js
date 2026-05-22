@@ -1,5 +1,6 @@
 import Content from "../models/Content.model.js";
 import User from "../models/User.model.js";
+import History from "../models/History.model.js";
 
 // Search movies and games
 export const search = async (req, res) => {
@@ -75,37 +76,28 @@ export const getContentDetails = async (req, res) => {
   }
 };
 
-export const addToHistroy = async (req,res) =>{
+export const addToHistory = async (req, res) => {
   try {
-    //get the userdata and content data from req 
-    const {userId , contentId} = req.body;
-    //find the user
-    const user = await User.findById(userId);
-    if(!user){
-      return res.status(404).json({success:false,message:"User not found"})
-    }
-    //find the content
+    // get data from body
+    const { userId, contentId } = req.body;
+    // check content exists
     const content = await Content.findById(contentId);
-    if(!content){
-      return res.status(404).json({success:false,message:"Content not found"})
+    if (!content) {
+      return res.status(404).json({success: false,message: "Content not found",});
     }
-    //check if content is already in recentlyViewed to avoid duplicates
-    if (!user.recentlyViewed.includes(contentId)) {
-      //add the content to the user's recentlyViewed
-      user.recentlyViewed.push(contentId);
-      await user.save();
-    }
-    //send response
-    res.status(200).json({success:true,message:"Content added to history successfully"})
-  }
-  catch(error){
-    console.log("Error in addToHistroy:", error);
-    res.status(500).json({ error: "Failed to add content to history" });
+    // create or update history
+    await History.findOneAndUpdate({ userId, contentId }, {lastAccessedAt: new Date(),},{upsert: true,new: true,});
+    // response
+    res.status(200).json({success: true,message: "History updated successfully",});
+  } 
+  catch (error) {
+    console.log("Error in addToHistory:", error);
+    res.status(500).json({error: "Failed to add history",});
   }
 };
 
 
-export const addtoWishlist = async(req,res)=>{
+export const addToWishlist = async(req,res)=>{
 
   try{
       //find user id and content ifd from req body
@@ -129,7 +121,7 @@ export const addtoWishlist = async(req,res)=>{
       res.status(200).json({success:true,message:"Content added to wishlist successfully"})
 }
   catch(error){
-    console.log("Error in addtoWishlist:", error);
+    console.log("Error in add to wishlist:", error);
     res.status(500).json({ error: "Failed to add content to wishlist" });
 }
 };
@@ -151,7 +143,7 @@ export const removeFromWishlist = async (req, res) => {
     }
     res.status(200).json({ success: true, message: "Content removed from wishlist successfully" });
   } catch (error) {
-    console.log("Error in removeFromWishlist:", error);
+    console.log("Error in remove from wishlist:", error);
     res.status(500).json({ error: "Failed to remove content from wishlist" });
   }
 };
