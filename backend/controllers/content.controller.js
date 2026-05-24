@@ -1,6 +1,7 @@
 import Content from "../models/Content.model.js";
 import User from "../models/User.model.js";
 import History from "../models/History.model.js";
+import Rating from "../models/Rating.model.js";
 
 // Search movies and games
 export const search = async (req, res) => {
@@ -145,6 +146,63 @@ export const removeFromWishlist = async (req, res) => {
   } catch (error) {
     console.log("Error in remove from wishlist:", error);
     res.status(500).json({ error: "Failed to remove content from wishlist" });
+  }
+};
+
+export const rateContent = async (req, res) => {
+  try {
+    // get user id, content id, and rating score from body
+    const { userId, contentId, score } = req.body;
+
+    // validate rating score (must be between 1 and 5)
+    if (!score || score < 1 || score > 5) {
+      return res.status(400).json({ success: false, message: "Rating score must be between 1 and 5" });
+    }
+
+    // find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // find content
+    const content = await Content.findById(contentId);
+    if (!content) {
+      return res.status(404).json({ success: false, message: "Content not found" });
+    }
+
+    // check if user already rated this content
+    const existingRating = await Rating.findOne({ userId, contentId });
+
+    if (existingRating) {
+      // get the old score
+      const oldScore = existingRating.score;
+      // update the score
+      existingRating.score = score;
+      await existingRating.save();
+
+      // update content average rating (score * 2 scales 1-5 to 1-10)
+      if (content.voteCount > 0) {
+        const totalScore = (content.averageRating * content.voteCount) - (oldScore * 2) + (score * 2);
+        content.averageRating = Math.round((totalScore / content.voteCount) * 10) / 10;
+        await content.save();
+      }
+    } else {
+      // create new rating
+      const newRating = new Rating({ userId, contentId, score });
+      await newRating.save();
+
+      // calculate new average and increase vote count
+      const totalScore = (content.averageRating * content.voteCount) + (score * 2);
+      content.voteCount += 1;
+      content.averageRating = Math.round((totalScore / content.voteCount) * 10) / 10;
+      await content.save();
+    }
+
+    res.status(200).json({ success: true, message: "Rating submitted successfully", averageRating: content.averageRating });
+  } catch (error) {
+    console.log("Error in rateContent:", error);
+    res.status(500).json({ error: "Failed to submit rating" });
   }
 };
 
