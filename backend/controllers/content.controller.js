@@ -206,6 +206,108 @@ export const rateContent = async (req, res) => {
   }
 };
 
+export const getRecommendations = async (req, res) => {
+  try {
+    // get user id from query parameters
+    const { userId } = req.query;
+
+    // check if user id is provided
+    if (!userId) {
+      return res.status(400).json({ success: false, message: "User ID is required" });
+    }
+
+    // find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // 1. Gather all content IDs the user has interacted with
+    const interactedContentIds = new Set();
+    user.recentlyViewed.forEach(id => interactedContentIds.add(id.toString()));
+    user.wishlist.forEach(id => interactedContentIds.add(id.toString()));
+
+    // fetch user ratings to find rated content
+    const userRatings = await Rating.find({ userId });
+    userRatings.forEach(r => interactedContentIds.add(r.contentId.toString()));
+
+    // 2. Determine user's favorite genres based on interactions
+    const favoriteGenresSet = new Set();
+    
+    // add explicitly favorited genres from user profile
+    if (user.favoriteGenres && user.favoriteGenres.length > 0) {
+      user.favoriteGenres.forEach(genre => favoriteGenresSet.add(genre));
+    }
+
+    // fetch actual content objects of recently viewed and wishlist to extract genres
+    const interactedContent = await Content.find({
+      _id: { $in: Array.from(interactedContentIds) }
+    });
+    
+    interactedContent.forEach(item => {
+      if (item.genres) {
+        item.genres.forEach(genre => favoriteGenresSet.add(genre));
+      }
+    });
+
+    const favoriteGenres = Array.from(favoriteGenresSet);
+
+    // 3. Fallback: if no interactions or favorite genres, return top trending items
+    if (favoriteGenres.length === 0) {
+      const fallbackContent = await Content.find({
+        _id: { $nin: Array.from(interactedContentIds) }
+      })
+      .sort({ popularityScore: -1 })
+      .limit(10);
+
+      return res.status(200).json({
+        success: true,
+        message: "No user preferences found. Showing popular content.",
+        data: fallbackContent
+      });
+    }
+
+    // 4. Recommendation Engine: fetch candidates matching at least one favorite genre
+    // exclude already interacted items
+    const candidates = await Content.find({
+      _id: { $nin: Array.from(interactedContentIds) },
+      genres: { $in: favoriteGenres }
+    })
+    .limit(100); // limit candidate pool size for speed
+
+    // 5. Score candidates based on genre overlap and rating
+    const scoredRecommendations = candidates.map(item => {
+      // count how many genres match user's favorites
+      const matchingGenresCount = item.genres.filter(genre => favoriteGenres.includes(genre)).length;
+      
+      // simple recommendation score formula:
+      // score = (number of matching genres * 2) + averageRating
+      const recommendationScore = (matchingGenresCount * 2) + (item.averageRating || 0);
+
+      return {
+        content: item,
+        score: recommendationScore
+      };
+    });
+
+    // sort candidates by score in descending order
+    scoredRecommendations.sort((a, b) => b.score - a.score);
+
+    // select top 10 recommended items
+    const recommendations = scoredRecommendations.slice(0, 10).map(r => r.content);
+
+    // send response
+    res.status(200).json({
+      success: true,
+      count: recommendations.length,
+      data: recommendations
+    });
+  } catch (error) {
+    console.log("Error in getRecommendations:", error);
+    res.status(500).json({ error: "Failed to get recommendations" });
+  }
+};
+
 
 
 

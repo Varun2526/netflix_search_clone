@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getTrending, search, getContentDetails, addToHistory, addToWishlist, removeFromWishlist, rateContent } from "../controllers/content.controller.js";
+import { getTrending, search, getContentDetails, addToHistory, addToWishlist, removeFromWishlist, rateContent, getRecommendations } from "../controllers/content.controller.js";
 
 const router = Router();
 
@@ -7,6 +7,7 @@ const router = Router();
 //routes of content 
 router.get("/search", search);
 router.get("/trending", getTrending);
+router.get("/recommendation", getRecommendations);
 router.get("/:id", getContentDetails);
 router.post("/history", addToHistory);
 router.post("/wishlist", addToWishlist);

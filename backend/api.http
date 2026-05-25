@@ -189,3 +189,7 @@ Content-Type: application/json
     "contentId":"6a0d6ddf27306f6785eba5df",
     "score": 5
 }
+
+
+### get personalized recommendations
+GET {{baseUrl}}/content/recommendation?userId=6a0c33cd192aac16eddde473
