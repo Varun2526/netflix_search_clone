@@ -198,13 +198,14 @@ export const rateContent = async (req, res) => {
       content.averageRating = Math.round((totalScore / content.voteCount) * 10) / 10;
       await content.save();
     }
-
     res.status(200).json({ success: true, message: "Rating submitted successfully", averageRating: content.averageRating });
-  } catch (error) {
+  } 
+  catch (error) {
     console.log("Error in rateContent:", error);
     res.status(500).json({ error: "Failed to submit rating" });
   }
 };
+
 
 export const getRecommendations = async (req, res) => {
   try {
@@ -240,9 +241,7 @@ export const getRecommendations = async (req, res) => {
     }
 
     // fetch actual content objects of recently viewed and wishlist to extract genres
-    const interactedContent = await Content.find({
-      _id: { $in: Array.from(interactedContentIds) }
-    });
+    const interactedContent = await Content.find({_id: { $in: Array.from(interactedContentIds) }});
     
     interactedContent.forEach(item => {
       if (item.genres) {
@@ -254,26 +253,17 @@ export const getRecommendations = async (req, res) => {
 
     // 3. Fallback: if no interactions or favorite genres, return top trending items
     if (favoriteGenres.length === 0) {
-      const fallbackContent = await Content.find({
-        _id: { $nin: Array.from(interactedContentIds) }
-      })
-      .sort({ popularityScore: -1 })
-      .limit(10);
+      const fallbackContent = await Content.find({_id: { $nin: Array.from(interactedContentIds) }})
+                                          .sort({ popularityScore: -1 })
+                                          .limit(10);
 
-      return res.status(200).json({
-        success: true,
-        message: "No user preferences found. Showing popular content.",
-        data: fallbackContent
-      });
+      return res.status(200).json({success: true,message: "No user preferences found. Showing popular content.",data: fallbackContent});
     }
 
     // 4. Recommendation Engine: fetch candidates matching at least one favorite genre
     // exclude already interacted items
-    const candidates = await Content.find({
-      _id: { $nin: Array.from(interactedContentIds) },
-      genres: { $in: favoriteGenres }
-    })
-    .limit(100); // limit candidate pool size for speed
+    const candidates = await Content.find({_id: { $nin: Array.from(interactedContentIds) },genres: { $in: favoriteGenres }})
+                                      .limit(100); // limit candidate pool size for speed
 
     // 5. Score candidates based on genre overlap and rating
     const scoredRecommendations = candidates.map(item => {
@@ -284,10 +274,7 @@ export const getRecommendations = async (req, res) => {
       // score = (number of matching genres * 2) + averageRating
       const recommendationScore = (matchingGenresCount * 2) + (item.averageRating || 0);
 
-      return {
-        content: item,
-        score: recommendationScore
-      };
+      return {content: item,score: recommendationScore};
     });
 
     // sort candidates by score in descending order
@@ -297,12 +284,9 @@ export const getRecommendations = async (req, res) => {
     const recommendations = scoredRecommendations.slice(0, 10).map(r => r.content);
 
     // send response
-    res.status(200).json({
-      success: true,
-      count: recommendations.length,
-      data: recommendations
-    });
-  } catch (error) {
+    res.status(200).json({success: true,count: recommendations.length,data: recommendations});
+  } 
+  catch (error) {
     console.log("Error in getRecommendations:", error);
     res.status(500).json({ error: "Failed to get recommendations" });
   }
