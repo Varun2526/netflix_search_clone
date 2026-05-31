@@ -152,6 +152,9 @@ project/
 └── README.md
 ```
 
+**📚 Documentation Links:**
+* [API Documentation](docs/API_DOCUMENTATION.md) - Detailed backend endpoints, requests, and responses.
+
 ---
 
 # 💾 Data Management & Version Control Rules

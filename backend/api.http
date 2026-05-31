@@ -201,3 +201,13 @@ GET {{baseUrl}}/content/recommendation?userId=6a0c33cd192aac16eddde473
 
 ### Get user profile (populated wishlist and history)
 GET {{baseUrl}}/user/profile/6a0c33cd192aac16eddde473
+
+
+### Update user favorite genres
+PUT {{baseUrl}}/user/favorite-genres
+Content-Type: application/json
+
+{
+    "userId": "6a0c33cd192aac16eddde473",
+    "genres": ["Action", "Sci-Fi", "RPG"]
+}
