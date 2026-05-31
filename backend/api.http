@@ -193,3 +193,11 @@ Content-Type: application/json
 
 ### get personalized recommendations
 GET {{baseUrl}}/content/recommendation?userId=6a0c33cd192aac16eddde473
+
+
+### ═══════════════════════════════════════════
+### 👤 USER PROFILE
+### ═══════════════════════════════════════════
+
+### Get user profile (populated wishlist and history)
+GET {{baseUrl}}/user/profile/6a0c33cd192aac16eddde473
