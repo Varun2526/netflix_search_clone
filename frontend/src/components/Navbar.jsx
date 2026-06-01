@@ -1,0 +1,76 @@
+import React, { useState, useEffect } from 'react';
+import { Search, User, Bell } from 'lucide-react';
+
+export default function Navbar({ isLoggedIn, onLoginToggle }) {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <nav
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled
+          ? 'bg-background/80 backdrop-blur-xl border-b border-white/5 py-4'
+          : 'bg-transparent py-6'
+      }`}
+    >
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 flex items-center justify-between gap-8">
+        {/* Logo */}
+        <div className="flex items-center gap-12">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent tracking-tighter">
+            KAIRO
+          </h1>
+
+          {/* Desktop Nav */}
+          {isLoggedIn && (
+            <div className="hidden lg:flex items-center gap-6">
+              <a href="#" className="text-foreground hover:text-primary transition-colors text-sm font-medium">Home</a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Movies</a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Games</a>
+              <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">My Wishlist</a>
+            </div>
+          )}
+        </div>
+
+        {/* Right Section */}
+        <div className="flex items-center gap-6">
+          {isLoggedIn && (
+            <>
+              {/* Search Bar */}
+              <div className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search movies, games, or genres..."
+                  className="bg-white/5 border border-white/10 text-sm rounded-full pl-10 pr-4 py-2 w-[280px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
+                />
+              </div>
+
+              <button className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
+                <Bell className="w-5 h-5" />
+              </button>
+            </>
+          )}
+          
+          <button 
+            onClick={onLoginToggle}
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+              isLoggedIn 
+                ? 'bg-primary/20 border border-primary/50 hover:bg-primary/40' 
+                : 'bg-white/10 border border-white/20 hover:bg-white/20'
+            }`}
+            title={isLoggedIn ? "Log out" : "Log in"}
+          >
+            <User className={`w-5 h-5 ${isLoggedIn ? 'text-primary' : 'text-foreground'}`} />
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
