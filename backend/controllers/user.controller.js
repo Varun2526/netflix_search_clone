@@ -1,9 +1,13 @@
 import User from "../models/User.model.js";
 
-// get user profile details
 export const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Ensure the user is only fetching their own profile
+    if (id !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: "Unauthorized to view this profile" });
+    }
 
     // find user by id, exclude the password, and populate wishlist and recentlyViewed content
     const user = await User.findById(id)
@@ -27,7 +31,8 @@ export const getUserProfile = async (req, res) => {
 // update user favorite genres
 export const updateFavoriteGenres = async (req, res) => {
   try {
-    const { userId, genres } = req.body;
+    const { genres } = req.body;
+    const userId = req.user._id;
 
     if (!userId) {
       return res.status(400).json({ success: false, message: "User ID is required" });

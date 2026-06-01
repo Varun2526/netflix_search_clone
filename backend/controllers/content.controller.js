@@ -80,7 +80,8 @@ export const getContentDetails = async (req, res) => {
 export const addToHistory = async (req, res) => {
   try {
     // get data from body
-    const { userId, contentId } = req.body;
+    const { contentId } = req.body;
+    const userId = req.user._id;
     // check content exists
     const content = await Content.findById(contentId);
     if (!content) {
@@ -102,7 +103,8 @@ export const addToWishlist = async(req,res)=>{
 
   try{
       //find user id and content ifd from req body
-      const {userId,contentId} = req.body;
+      const {contentId} = req.body;
+      const userId = req.user._id;
       // user 
       const user = await User.findById(userId)
       //find user
@@ -130,7 +132,8 @@ export const addToWishlist = async(req,res)=>{
 export const removeFromWishlist = async (req, res) => {
   try {
     //get user id and content id from req body
-    const { userId, contentId } = req.body;
+    const { contentId } = req.body;
+    const userId = req.user._id;
     //find user
     const user = await User.findById(userId);
     if (!user) {
@@ -152,7 +155,8 @@ export const removeFromWishlist = async (req, res) => {
 export const rateContent = async (req, res) => {
   try {
     // get user id, content id, and rating score from body
-    const { userId, contentId, score } = req.body;
+    const { contentId, score } = req.body;
+    const userId = req.user._id;
 
     // validate rating score (must be between 1 and 5)
     if (!score || score < 1 || score > 5) {
@@ -210,7 +214,7 @@ export const rateContent = async (req, res) => {
 export const getRecommendations = async (req, res) => {
   try {
     // get user id from query parameters
-    const { userId } = req.query;
+    const userId = req.user._id;
 
     // check if user id is provided
     if (!userId) {
