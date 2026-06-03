@@ -1,26 +1,34 @@
-const API_BASE_URL = 'http://localhost:3131/api';
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3131/api',
+  withCredentials: true, // This replaces credentials: 'include'
+});
 
 export const login = async (email, password) => {
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Failed to login');
+  try {
+    const res = await api.post('/auth/login', { email, password });
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to login');
   }
-  return res.json();
 };
 
 export const getTrendingContent = async () => {
-  const res = await fetch(`${API_BASE_URL}/content/trending`);
-  if (!res.ok) throw new Error('Failed to fetch trending content');
-  return res.json();
+  try {
+    const res = await api.get('/content/trending');
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to fetch trending content');
+  }
 };
 
 export const getRecommendedContent = async (userId) => {
-  const res = await fetch(`${API_BASE_URL}/content/recommendation?userId=${userId}`);
-  if (!res.ok) throw new Error('Failed to fetch recommendations');
-  return res.json();
+  try {
+    const res = await api.get(`/content/recommendation?userId=${userId}`);
+    return res.data;
+  } catch (err) {
+    console.error('Recommendation fetch error:', err.response?.data);
+    throw new Error(err.response?.data?.message || 'Failed to fetch recommendations');
+  }
 };
