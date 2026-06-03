@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, User, Bell } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-export default function Navbar({ isLoggedIn, onLoginToggle }) {
+export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <nav
@@ -28,19 +35,27 @@ export default function Navbar({ isLoggedIn, onLoginToggle }) {
           </h1>
 
           {/* Desktop Nav */}
-          {isLoggedIn && (
+          {user && (
             <div className="hidden lg:flex items-center gap-6">
-              <a href="#" className="text-foreground hover:text-primary transition-colors text-sm font-medium">Home</a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Movies</a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Games</a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">My Wishlist</a>
+              <Link to="/" className="text-foreground hover:text-primary transition-colors text-sm font-medium">
+                Home
+              </Link>
+              <Link to="/movies" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">
+                Movies
+              </Link>
+              <Link to="/games" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">
+                Games
+              </Link>
+              <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">
+                My Wishlist
+              </Link>
             </div>
           )}
         </div>
 
         {/* Right Section */}
         <div className="flex items-center gap-6">
-          {isLoggedIn && (
+          {user && (
             <>
               {/* Search Bar */}
               <div className="relative hidden md:block">
@@ -52,22 +67,23 @@ export default function Navbar({ isLoggedIn, onLoginToggle }) {
                 />
               </div>
 
+              {/* Notification Icon */}
               <button className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
                 <Bell className="w-5 h-5" />
               </button>
             </>
           )}
-          
-          <button 
-            onClick={onLoginToggle}
+
+          <button
+    onClick={user ? handleLogout : () => navigate('/login')}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-              isLoggedIn 
-                ? 'bg-primary/20 border border-primary/50 hover:bg-primary/40' 
+              user
+                ? 'bg-primary/20 border border-primary/50 hover:bg-primary/40'
                 : 'bg-white/10 border border-white/20 hover:bg-white/20'
             }`}
-            title={isLoggedIn ? "Log out" : "Log in"}
+            title={user ? 'Log out' : 'Log in'}
           >
-            <User className={`w-5 h-5 ${isLoggedIn ? 'text-primary' : 'text-foreground'}`} />
+            <User className={`w-5 h-5 ${user ? 'text-primary' : 'text-foreground'}`} />
           </button>
         </div>
       </div>

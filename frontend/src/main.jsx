@@ -1,32 +1,42 @@
-import { StrictMode, useState } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import './index.css'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import './index.css';
 
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Navbar from './components/Navbar'
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Navbar from './components/Navbar';
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 function MainLayout() {
-  const [user, setUser] = useState(null);
+  const { user, loading } = useAuth();
 
-  const handleLogout = () => {
-    setUser(null);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background text-foreground">
+        <p className="text-xl">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground pb-20">
-        <Navbar isLoggedIn={!!user} onLoginToggle={user ? handleLogout : null} />
+        <Navbar />
         <Routes>
-          <Route 
-            path="/" 
-            element={user ? <Home user={user} /> : <Navigate to="/login" replace />} 
+          <Route
+            path="/"
+            element={user ? <Home /> : <Navigate to="/login" replace />}
           />
-          <Route 
-            path="/login" 
-            element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} 
+          <Route
+            path="/login"
+            element={!user ? <Login /> : <Navigate to="/" replace />}
           />
+            <Route
+              path="/register"
+              element={!user ? <Register /> : <Navigate to="/" replace />}
+            />
         </Routes>
       </div>
     </BrowserRouter>
@@ -35,6 +45,8 @@ function MainLayout() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <MainLayout />
-  </StrictMode>,
-)
+    <AuthProvider>
+      <MainLayout />
+    </AuthProvider>
+  </StrictMode>
+);
