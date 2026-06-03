@@ -3,8 +3,10 @@ import HeroBanner from '../components/HeroBanner';
 import ContentCarousel from '../components/ContentCarousel';
 import ContentDetailsModal from '../components/ContentDetailsModal';
 import { getTrendingContent, getRecommendedContent } from '../api';
+import { useAuth } from '../context/AuthContext';
 
-export default function Home({ user }) {
+export default function Home() {
+  const { user } = useAuth();
   const [selectedItem, setSelectedItem] = useState(null);
   
   // Data states
