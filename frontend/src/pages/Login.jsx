@@ -14,11 +14,14 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    console.log('[Login] Submitting:', email);
     try {
       await login(email, password);
+      console.log('[Login] Success, navigating to /');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      console.error('[Login] Error:', err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }

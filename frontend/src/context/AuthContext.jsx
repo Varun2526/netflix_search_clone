@@ -11,14 +11,17 @@ export const AuthProvider = ({ children }) => {
   // Load current user on mount
   useEffect(() => {
     const fetchUser = async () => {
+      console.log('[AuthContext] Checking existing session...');
       try {
         const res = await axios.get('/api/auth/me', { withCredentials: true });
+        console.log('[AuthContext] /me response:', res.data);
         if (res.data.success) {
           setUser(res.data.payload);
         } else {
           setUser(null);
         }
       } catch (err) {
+        console.log('[AuthContext] No active session:', err.response?.status);
         setUser(null);
       } finally {
         setLoading(false);
@@ -28,22 +31,43 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const res = await axios.post('/api/auth/login', { email, password }, { withCredentials: true });
-    setUser(res.data.payload);
-    return res.data;
+    console.log('[AuthContext] Logging in with:', email);
+    try {
+      const res = await axios.post('/api/auth/login', { email, password }, { withCredentials: true });
+      console.log('[AuthContext] Login success:', res.data);
+      setUser(res.data.payload);
+      return res.data;
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+      console.error('[AuthContext] Login failed:', err.response?.status, errorMsg);
+      throw new Error(errorMsg);
+    }
   };
 
-  const register = async (email, password, username) => {
-    const res = await axios.post('/api/auth/register', { email, password, username }, { withCredentials: true });
-    if (res.data.success) {
+  const register = async (username, email, password) => {
+    console.log('[AuthContext] Registering user:', { username, email });
+    try {
+      const res = await axios.post('/api/auth/register', { username, email, password }, { withCredentials: true });
+      console.log('[AuthContext] Register success:', res.data);
       setUser(res.data.payload);
+      return res.data;
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || err.message;
+      console.error('[AuthContext] Register failed:', err.response?.status, errorMsg);
+      throw new Error(errorMsg);
     }
-    return res.data;
   };
 
   const logout = async () => {
-    await axios.post('/api/auth/logout', {}, { withCredentials: true });
-    setUser(null);
+    console.log('[AuthContext] Logging out...');
+    try {
+      await axios.post('/api/auth/logout', {}, { withCredentials: true });
+      console.log('[AuthContext] Logout success');
+      setUser(null);
+    } catch (err) {
+      console.error('[AuthContext] Logout failed:', err.response?.status, err.message);
+      setUser(null);
+    }
   };
 
   return (

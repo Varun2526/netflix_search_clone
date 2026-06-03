@@ -15,11 +15,14 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    console.log('[Register] Submitting:', { username, email });
     try {
-      await register(email, password, username);
+      await register(username, email, password);
+      console.log('[Register] Success, navigating to /');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || err.message);
+      console.error('[Register] Error:', err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
