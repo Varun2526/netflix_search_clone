@@ -171,6 +171,16 @@ export const logout = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
+// ── GET CURRENT USER ──
+export const getCurrentUser = async (req, res) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ error: "Unauthenticated" });
+  }
+  const payload = { id: user._id, username: user.username };
+  return res.status(200).json({ success: true, payload });
+};
+
 
 
 // ── GITHUB AUTH ──
