@@ -7,7 +7,8 @@ import Rating from "../models/Rating.model.js";
 export const search = async (req, res) => {
   try {
     // get data from url
-    const { query, type, genre } = req.query;
+    // get data from url
+    const { query, type, genre, limit = 20, hasImage } = req.query;
     // create empty object
     const filters = {};
 
@@ -23,9 +24,15 @@ export const search = async (req, res) => {
     if (genre) {
       filters.genres = genre;
     }
+    // only items with poster images
+    if (hasImage === 'true') {
+      filters.posterImage = { $exists: true, $ne: "" };
+    }
 
     // find data from database
-    const data = await Content.find(filters).limit(20);
+    const parsedLimit = parseInt(limit);
+    const queryBuilder = Content.find(filters).sort({ popularityScore: -1 });
+    const data = await (parsedLimit === 0 ? queryBuilder : queryBuilder.limit(Math.min(parsedLimit, 200)));
     // send response
     res.status(200).json({ success: true, count: data.length, data: data, });
   }

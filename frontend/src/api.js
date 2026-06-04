@@ -32,3 +32,14 @@ export const getRecommendedContent = async (userId) => {
     throw new Error(err.response?.data?.message || 'Failed to fetch recommendations');
   }
 };
+
+export const getContentByType = async (type, limit = 100, hasImage = true) => {
+  try {
+    const res = await api.get(`/content/search?type=${type}&limit=${limit}&hasImage=${hasImage}`);
+    console.log(`[API] getContentByType(${type}):`, res.data);
+    return res.data;
+  } catch (err) {
+    console.error(`[API] getContentByType(${type}) error:`, err.response?.data);
+    throw new Error(err.response?.data?.message || `Failed to fetch ${type}s`);
+  }
+};

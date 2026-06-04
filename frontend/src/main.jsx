@@ -6,6 +6,8 @@ import './index.css';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Movies from './pages/Movies';
+import Games from './pages/Games';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -33,10 +35,18 @@ function MainLayout() {
             path="/login"
             element={!user ? <Login /> : <Navigate to="/" replace />}
           />
-            <Route
-              path="/register"
-              element={!user ? <Register /> : <Navigate to="/" replace />}
-            />
+          <Route
+            path="/register"
+            element={!user ? <Register /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/movies"
+            element={user ? <Movies /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/games"
+            element={user ? <Games /> : <Navigate to="/login" replace />}
+          />
         </Routes>
       </div>
     </BrowserRouter>
