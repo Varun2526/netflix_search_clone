@@ -12,6 +12,7 @@ export default function Home() {
   // Data states
   const [trendingData, setTrendingData] = useState([]);
   const [recommendedData, setRecommendedData] = useState([]);
+  const [heroItems, setHeroItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -23,14 +24,11 @@ export default function Home() {
       
       // Helper to map data based on the backend Content model
       const mapData = (items) => {
-        return items.map(item => ({
+        return items
+          .filter(item => item.posterImage || item.posterUrl)
+          .map(item => ({
             ...item,
-            // Use a fallback image if posterImage is empty so cards still render
-            posterUrl: item.posterImage || item.posterUrl || (
-              item.type === 'game' 
-                ? 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop' 
-                : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop'
-            ),
+            posterUrl: item.posterImage || item.posterUrl,
             year: item.releaseYear || item.releaseDate,
             rating: item.averageRating,
           }));
@@ -38,7 +36,13 @@ export default function Home() {
 
       try {
         const trendingRes = await getTrendingContent();
-        setTrendingData(mapData(trendingRes.data || []));
+        const trendingMapped = mapData(trendingRes.data || []);
+        setTrendingData(trendingMapped);
+        
+        // Pick 5 random items for the hero banner
+        const validForHero = trendingMapped.filter(i => i.posterImage || i.posterUrl);
+        const shuffled = [...validForHero].sort(() => 0.5 - Math.random());
+        setHeroItems(shuffled.slice(0, 5));
       } catch (err) {
         console.error('Trending fetch error:', err);
       }
@@ -59,7 +63,7 @@ export default function Home() {
   return (
     <>
       <main>
-        <HeroBanner />
+        <HeroBanner items={heroItems} />
         
         <div className="relative z-20 -mt-24 pb-12">
           {isLoading ? (
