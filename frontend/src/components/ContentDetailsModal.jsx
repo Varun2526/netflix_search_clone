@@ -1,9 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Plus, Check, Star } from 'lucide-react';
+import { addToHistory, addToWishlist } from '../api';
 
 export default function ContentDetailsModal({ item, isOpen, onClose }) {
+  const [loadingAction, setLoadingAction] = useState(null);
+
   if (!isOpen || !item) return null;
+
+  const handlePlay = async () => {
+    setLoadingAction('play');
+    try {
+      await addToHistory(item._id);
+      alert('Added to history / Playing!');
+    } catch (err) {
+      console.error('Failed to add to history', err);
+      alert('Failed to add to history');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleWishlist = async () => {
+    setLoadingAction('wishlist');
+    try {
+      await addToWishlist(item._id);
+      alert('Added to wishlist!');
+    } catch (err) {
+      console.error('Failed to add to wishlist', err);
+      alert('Failed to add to wishlist');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -66,17 +95,30 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
             </p>
 
             <div className="flex items-center gap-4 mb-10">
-              <button className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+              <button 
+                onClick={handlePlay}
+                disabled={loadingAction === 'play'}
+                className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50"
+              >
                 <Play className="w-5 h-5 fill-current" />
-                Play Now
+                {loadingAction === 'play' ? 'Loading...' : 'Play Now'}
               </button>
               
-              <button className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-foreground border border-white/10 py-3 rounded-lg font-semibold transition-colors">
+              <button 
+                onClick={handleWishlist}
+                disabled={loadingAction === 'wishlist'}
+                className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-foreground border border-white/10 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+              >
                 <Plus className="w-5 h-5" />
-                Add to Wishlist
+                {loadingAction === 'wishlist' ? 'Loading...' : 'Add to Wishlist'}
               </button>
 
-              <button className="flex items-center justify-center w-12 h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors group" title="Mark as played">
+              <button 
+                onClick={handlePlay}
+                disabled={loadingAction === 'play'}
+                className="flex items-center justify-center w-12 h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors group disabled:opacity-50" 
+                title="Mark as played"
+              >
                 <Check className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </button>
             </div>

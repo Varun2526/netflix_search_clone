@@ -262,8 +262,32 @@ export const getRecommendations = async (req, res) => {
 
     const favoriteGenres = Array.from(favoriteGenresSet);
 
-    // 3. Fallback: if no interactions or favorite genres, return top trending items
-    if (favoriteGenres.length === 0) {
+    // 3. Collaborative Filtering: Find similar users
+    // Users who have interacted with the same content
+    const similarUsers = await User.find({
+      _id: { $ne: userId },
+      $or: [
+        { recentlyViewed: { $in: Array.from(interactedContentIds) } },
+        { wishlist: { $in: Array.from(interactedContentIds) } }
+      ]
+    }).limit(50); // limit to top 50 similar users for performance
+
+    const collabContentScores = {}; // contentId -> score
+
+    similarUsers.forEach(simUser => {
+      // items similar user liked
+      const simUserItems = [...simUser.recentlyViewed, ...simUser.wishlist];
+      simUserItems.forEach(itemId => {
+        const idStr = itemId.toString();
+        // if current user hasn't interacted with it
+        if (!interactedContentIds.has(idStr)) {
+          collabContentScores[idStr] = (collabContentScores[idStr] || 0) + 1;
+        }
+      });
+    });
+
+    // 4. Fallback: if no interactions or favorite genres, return top trending items
+    if (favoriteGenres.length === 0 && Object.keys(collabContentScores).length === 0) {
       const fallbackContent = await Content.find({_id: { $nin: Array.from(interactedContentIds) }})
                                           .sort({ popularityScore: -1 })
                                           .limit(10);
@@ -271,19 +295,32 @@ export const getRecommendations = async (req, res) => {
       return res.status(200).json({success: true,message: "No user preferences found. Showing popular content.",data: fallbackContent});
     }
 
-    // 4. Recommendation Engine: fetch candidates matching at least one favorite genre
-    // exclude already interacted items
-    const candidates = await Content.find({_id: { $nin: Array.from(interactedContentIds) },genres: { $in: favoriteGenres }})
-                                      .limit(100); // limit candidate pool size for speed
+    // 5. Recommendation Engine: fetch candidates
+    // We fetch candidates from collaborative filtering AND genre matching
+    const candidateIds = Object.keys(collabContentScores);
+    
+    // Fetch content for candidate IDs and genre matches
+    const candidates = await Content.find({
+      _id: { $nin: Array.from(interactedContentIds) },
+      $or: [
+        { _id: { $in: candidateIds } },
+        { genres: { $in: favoriteGenres } }
+      ]
+    }).limit(100); // limit candidate pool size for speed
 
-    // 5. Score candidates based on genre overlap and rating
+    // 6. Score candidates based on collaborative frequency, genre overlap, and rating
     const scoredRecommendations = candidates.map(item => {
+      const idStr = item._id.toString();
+      
+      // Collaborative score (frequency from similar users)
+      const collabScore = (collabContentScores[idStr] || 0) * 3;
+
       // count how many genres match user's favorites
-      const matchingGenresCount = item.genres.filter(genre => favoriteGenres.includes(genre)).length;
+      const matchingGenresCount = item.genres ? item.genres.filter(genre => favoriteGenres.includes(genre)).length : 0;
       
       // simple recommendation score formula:
-      // score = (number of matching genres * 2) + averageRating
-      const recommendationScore = (matchingGenresCount * 2) + (item.averageRating || 0);
+      // score = CollabScore + (number of matching genres * 2) + averageRating
+      const recommendationScore = collabScore + (matchingGenresCount * 2) + (item.averageRating || 0);
 
       return {content: item,score: recommendationScore};
     });

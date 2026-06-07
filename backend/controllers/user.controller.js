@@ -60,8 +60,8 @@ export const updateFavoriteGenres = async (req, res) => {
 export const getWishlist = async (req, res) => {
   try {
     const user = req.user;
-    await user.populate('wishlist').execPopulate();
-    res.status(200).json({ success: true, wishlist: user.wishlist });
+    await user.populate('wishlist');
+    res.status(200).json({ success: true, data: user.wishlist });
   } catch (err) {
     console.error('Error fetching wishlist:', err);
     res.status(500).json({ error: 'Failed to fetch wishlist' });
@@ -72,8 +72,8 @@ export const getWishlist = async (req, res) => {
 export const getHistory = async (req, res) => {
   try {
     const user = req.user;
-    await user.populate('recentlyViewed').execPopulate();
-    res.status(200).json({ success: true, history: user.recentlyViewed });
+    await user.populate('recentlyViewed');
+    res.status(200).json({ success: true, data: user.recentlyViewed });
   } catch (err) {
     console.error('Error fetching history:', err);
     res.status(500).json({ error: 'Failed to fetch history' });

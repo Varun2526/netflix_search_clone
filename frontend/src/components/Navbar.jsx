@@ -75,16 +75,26 @@ export default function Navbar() {
           )}
 
           <button
-    onClick={user ? handleLogout : () => navigate('/login')}
+            onClick={() => user ? navigate('/profile') : navigate('/login')}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
               user
                 ? 'bg-primary/20 border border-primary/50 hover:bg-primary/40'
                 : 'bg-white/10 border border-white/20 hover:bg-white/20'
             }`}
-            title={user ? 'Log out' : 'Log in'}
+            title={user ? 'Profile' : 'Log in'}
           >
             <User className={`w-5 h-5 ${user ? 'text-primary' : 'text-foreground'}`} />
           </button>
+          
+          {user && (
+            <button
+              onClick={handleLogout}
+              className="text-muted-foreground hover:text-destructive transition-colors text-sm font-medium"
+              title="Log out"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </nav>

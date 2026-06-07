@@ -8,6 +8,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Movies from './pages/Movies';
 import Games from './pages/Games';
+import Profile from './pages/Profile';
+import MyList from './pages/MyList';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -46,6 +48,14 @@ function MainLayout() {
           <Route
             path="/games"
             element={user ? <Games /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/profile"
+            element={user ? <Profile /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/wishlist"
+            element={user ? <MyList /> : <Navigate to="/login" replace />}
           />
         </Routes>
       </div>
