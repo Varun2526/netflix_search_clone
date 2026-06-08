@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Plus, Check, Star } from 'lucide-react';
-import { addToHistory, addToWishlist } from '../api';
+import { addToHistory, addToWishlist, rateContent } from '../api';
 
 export default function ContentDetailsModal({ item, isOpen, onClose }) {
   const [loadingAction, setLoadingAction] = useState(null);
+  const [userRating, setUserRating] = useState(0);
+  const [hoveredStar, setHoveredStar] = useState(0);
 
   if (!isOpen || !item) return null;
 
@@ -29,6 +31,20 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
     } catch (err) {
       console.error('Failed to add to wishlist', err);
       alert('Failed to add to wishlist');
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleRate = async (score) => {
+    setLoadingAction('rate');
+    try {
+      await rateContent(item._id, score);
+      setUserRating(score);
+      alert('Rating submitted successfully!');
+    } catch (err) {
+      console.error('Failed to submit rating', err);
+      alert('Failed to submit rating');
     } finally {
       setLoadingAction(null);
     }
@@ -90,9 +106,34 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
               </div>
             </div>
 
-            <p className="text-lg text-foreground/80 mb-8 leading-relaxed">
+            <p className="text-lg text-foreground/80 mb-6 leading-relaxed">
               {item.description}
             </p>
+
+            {/* Interactive Rating Section */}
+            <div className="flex items-center gap-2 mb-8">
+              <span className="text-sm font-medium text-muted-foreground mr-2">Rate this:</span>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleRate(star)}
+                    onMouseEnter={() => setHoveredStar(star)}
+                    onMouseLeave={() => setHoveredStar(0)}
+                    disabled={loadingAction === 'rate'}
+                    className="focus:outline-none transition-transform hover:scale-110 disabled:opacity-50"
+                  >
+                    <Star 
+                      className={`w-6 h-6 transition-colors ${
+                        star <= (hoveredStar || userRating) 
+                          ? 'text-primary fill-primary' 
+                          : 'text-muted-foreground hover:text-primary/50'
+                      }`} 
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="flex items-center gap-4 mb-10">
               <button 
