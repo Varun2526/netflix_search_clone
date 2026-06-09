@@ -6,13 +6,8 @@ export default function HeroBanner({ items = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    if (!items || items.length <= 1) return;
-    
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
-    }, 5000); // Auto-scroll every 5 seconds
-    
-    return () => clearInterval(interval);
+    // Auto-scroll removed for better accessibility
+    // Users can manually navigate via the indicators
   }, [items]);
 
   if (!items || items.length === 0) {
@@ -94,10 +89,10 @@ export default function HeroBanner({ items = [] }) {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3.5 rounded-lg font-semibold transition-colors shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3.5 rounded-lg font-semibold transition-colors shadow-lg shadow-primary/20"
               >
                 <Play className="w-5 h-5 fill-current" />
-                Play Now
+                View Details
               </motion.button>
               
               <motion.button 
@@ -114,12 +109,13 @@ export default function HeroBanner({ items = [] }) {
       </div>
 
       {/* Carousel Indicators */}
-      <div className="absolute bottom-32 left-0 right-0 z-20 flex justify-center gap-2">
+      <div className="absolute bottom-16 md:bottom-32 left-0 right-0 z-20 flex justify-center gap-4">
         {items.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-8 bg-primary shadow-[0_0_10px_rgba(168,85,247,0.8)]' : 'w-4 bg-white/30 hover:bg-white/50'}`}
+            className={`h-3 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-10 bg-primary shadow-lg shadow-primary/50' : 'w-6 bg-white/30 hover:bg-white/50'}`}
+            aria-label={`Go to slide ${idx + 1}`}
           />
         ))}
       </div>

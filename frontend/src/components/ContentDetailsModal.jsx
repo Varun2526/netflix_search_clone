@@ -70,7 +70,7 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="relative w-full max-w-5xl bg-card border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-10 flex flex-col md:flex-row h-[80vh] md:h-[600px]"
+          className="relative w-full max-w-5xl bg-card border border-border rounded-2xl overflow-hidden shadow-2xl shadow-black/50 z-10 flex flex-col md:flex-row h-[85vh] md:h-[600px]"
         >
           {/* Close Button */}
           <button 
@@ -135,33 +135,38 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mb-10">
-              <button 
-                onClick={handlePlay}
-                disabled={loadingAction === 'play'}
-                className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50"
-              >
-                <Play className="w-5 h-5 fill-current" />
-                {loadingAction === 'play' ? 'Loading...' : 'Play Now'}
-              </button>
-              
-              <button 
-                onClick={handleWishlist}
-                disabled={loadingAction === 'wishlist'}
-                className="flex-1 flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-foreground border border-white/10 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
-              >
-                <Plus className="w-5 h-5" />
-                {loadingAction === 'wishlist' ? 'Loading...' : 'Add to Wishlist'}
-              </button>
+            <div className="flex flex-col gap-6 mb-10">
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-3">Available On</h4>
+                <div className="flex flex-wrap gap-3">
+                  {(item.type?.toLowerCase() === 'game' ? ['Steam', 'PlayStation 5', 'Xbox Series X'] : ['Netflix', 'Prime Video', 'Hulu']).map(platform => (
+                    <div key={platform} className="px-4 py-2 rounded-lg bg-secondary/50 border border-border text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-primary/80" />
+                      {platform}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-              <button 
-                onClick={handlePlay}
-                disabled={loadingAction === 'play'}
-                className="flex items-center justify-center w-12 h-12 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors group disabled:opacity-50" 
-                title="Mark as played"
-              >
-                <Check className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </button>
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={handleWishlist}
+                  disabled={loadingAction === 'wishlist'}
+                  className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                >
+                  <Plus className="w-5 h-5" />
+                  {loadingAction === 'wishlist' ? 'Loading...' : 'Add to Wishlist'}
+                </button>
+
+                <button 
+                  onClick={handlePlay}
+                  disabled={loadingAction === 'play'}
+                  className="flex items-center justify-center w-12 h-12 bg-secondary hover:bg-secondary/80 border border-border rounded-lg transition-colors group disabled:opacity-50" 
+                  title="Mark as viewed/played"
+                >
+                  <Check className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </button>
+              </div>
             </div>
 
             {/* Additional Meta */}

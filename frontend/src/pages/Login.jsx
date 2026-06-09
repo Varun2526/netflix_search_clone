@@ -29,9 +29,7 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-      <div className="w-full max-w-md bg-card border border-white/10 rounded-2xl p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
-        {/* Neon accent top border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-cyan-400" />
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-2xl shadow-black/50 relative overflow-hidden">
         
         <h2 className="text-3xl font-bold mb-6 tracking-tight text-center">
           Sign in to <span className="text-primary">KAIRO</span>
@@ -69,19 +67,24 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] disabled:opacity-50 flex justify-center items-center h-[52px]"
+            className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-lg font-semibold transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex justify-center items-center h-[52px]"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
             ) : (
-              'Access Terminal'
+              'Sign In'
             )}
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <a href="/register" className="text-primary hover:underline font-medium">Create one</a>
-        </p>
+        <div className="mt-6 flex flex-col gap-2 text-center text-sm">
+          <p className="text-muted-foreground">
+            Don't have an account?{' '}
+            <a href="/register" className="text-primary hover:underline font-medium">Create one</a>
+          </p>
+          <p>
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Forgot your password?</a>
+          </p>
+        </div>
       </div>
     </div>
   );
