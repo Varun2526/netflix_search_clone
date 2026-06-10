@@ -5,12 +5,11 @@ import { verifyToken } from "../middleware/auth.middleware.js";
 const router = Router();
 
 
-//routes of content 
 router.get("/search", search);
 router.get("/trending", getTrending);
 router.get("/recommendation", verifyToken, getRecommendations);
 router.get("/:id", getContentDetails);
-router.get("/:id/providers", verifyToken, getContentProviders);
+router.get("/:id/providers", getContentProviders);
 router.post("/history", verifyToken, addToHistory);
 router.post("/wishlist", verifyToken, addToWishlist);
 router.delete("/wishlist/remove", verifyToken, removeFromWishlist);

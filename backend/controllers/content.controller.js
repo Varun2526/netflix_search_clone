@@ -394,30 +394,34 @@ export const getContentProviders = async (req, res) => {
         }
       }
     } else if (content.type === 'game') {
-      const RAWG_API_KEY = process.env.RAWG_API_KEY;
-      if (RAWG_API_KEY && RAWG_API_KEY !== 'YOUR_RAWG_API_KEY') {
-        // Search RAWG
-        const searchUrl = `https://api.rawg.io/api/games?search=${encodeURIComponent(content.title)}&key=${RAWG_API_KEY}`;
+      // Use public Steam API (no API key required)
+      const searchUrl = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(content.title)}&l=english&cc=US`;
+      try {
         const searchRes = await fetch(searchUrl);
         const searchData = await searchRes.json();
         
-        if (searchData.results && searchData.results.length > 0) {
-          const gameId = searchData.results[0].id;
-          
-          // Get detailed store info from the game details
-          const detailUrl = `https://api.rawg.io/api/games/${gameId}?key=${RAWG_API_KEY}`;
-          const detailRes = await fetch(detailUrl);
-          const detailData = await detailRes.json();
-          
-          if (detailData.stores) {
-            providers = detailData.stores.map(s => ({
-              name: s.store.name,
-              logoPath: s.store.image_background || ''
-            }));
-          }
+        if (searchData && searchData.items && searchData.items.length > 0) {
+          // Found on Steam
+          providers.push({
+            name: 'Steam',
+            logoPath: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Steam_icon_logo.svg/512px-Steam_icon_logo.svg.png'
+          });
         }
-      } else {
-        // Fallback for games if no RAWG key is provided
+        
+        // Since we can't easily search PS/Xbox without auth, we'll append them 
+        // statically as fallbacks for AAA games, or just always show them for portfolio purposes.
+        providers.push({
+          name: 'PlayStation Store',
+          logoPath: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/PlayStation_logo.svg/512px-PlayStation_logo.svg.png'
+        });
+        providers.push({
+          name: 'Xbox Store',
+          logoPath: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Xbox_logo_%282019%29.svg/512px-Xbox_logo_%282019%29.svg.png'
+        });
+
+      } catch (err) {
+        console.error("Steam API Error:", err);
+        // Fallback
         providers = [
           { name: 'Steam', logoPath: '' },
           { name: 'PlayStation Store', logoPath: '' },

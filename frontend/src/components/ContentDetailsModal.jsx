@@ -16,8 +16,8 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
         setLoadingProviders(true);
         try {
           const res = await getContentProviders(item._id);
-          if (res) {
-            setProviders(res);
+          if (res && res.data) {
+            setProviders(res.data);
           }
         } catch (error) {
           console.error("Failed to fetch providers:", error);
@@ -201,7 +201,7 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
                 </button>
               </div>
             </div>
-
+            
             {/* Additional Meta */}
             <div className="space-y-4 pt-8 border-t border-white/10">
               <div className="flex gap-4 text-sm">
