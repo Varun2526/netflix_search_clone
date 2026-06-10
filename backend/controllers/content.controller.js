@@ -340,9 +340,100 @@ export const getRecommendations = async (req, res) => {
   }
 };
 
+export const getContentProviders = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const content = await Content.findById(id);
+    
+    if (!content) {
+      return res.status(404).json({ success: false, message: "Content not found" });
+    }
 
+    // Return cached providers if already fetched
+    if (content.providersFetched) {
+      return res.status(200).json({ success: true, data: content.providers });
+    }
 
+    let providers = [];
 
+    if (content.type === 'movie') {
+      const TMDB_API_KEY = process.env.TMDB_API_KEY;
+      if (TMDB_API_KEY) {
+        // 1. Search for movie/tv ID
+        const searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(content.title)}`;
+        const searchRes = await fetch(searchUrl);
+        const searchData = await searchRes.json();
+        
+        const bestMatch = searchData.results?.find(r => r.media_type === 'movie' || r.media_type === 'tv');
+        
+        if (bestMatch) {
+          // 2. Fetch watch providers
+          const providerUrl = `https://api.themoviedb.org/3/${bestMatch.media_type}/${bestMatch.id}/watch/providers?api_key=${TMDB_API_KEY}`;
+          const providerRes = await fetch(providerUrl);
+          const providerData = await providerRes.json();
+          
+          const usProviders = providerData.results?.US;
+          if (usProviders) {
+            const flatrate = usProviders.flatrate || [];
+            const rent = usProviders.rent || [];
+            const buy = usProviders.buy || [];
+            
+            // Combine and deduplicate
+            const allProviders = [...flatrate, ...rent, ...buy];
+            const uniqueMap = new Map();
+            allProviders.forEach(p => {
+              if (!uniqueMap.has(p.provider_id)) {
+                uniqueMap.set(p.provider_id, {
+                  name: p.provider_name,
+                  logoPath: p.logo_path ? `https://image.tmdb.org/t/p/original${p.logo_path}` : ''
+                });
+              }
+            });
+            providers = Array.from(uniqueMap.values());
+          }
+        }
+      }
+    } else if (content.type === 'game') {
+      const RAWG_API_KEY = process.env.RAWG_API_KEY;
+      if (RAWG_API_KEY && RAWG_API_KEY !== 'YOUR_RAWG_API_KEY') {
+        // Search RAWG
+        const searchUrl = `https://api.rawg.io/api/games?search=${encodeURIComponent(content.title)}&key=${RAWG_API_KEY}`;
+        const searchRes = await fetch(searchUrl);
+        const searchData = await searchRes.json();
+        
+        if (searchData.results && searchData.results.length > 0) {
+          const gameId = searchData.results[0].id;
+          
+          // Get detailed store info from the game details
+          const detailUrl = `https://api.rawg.io/api/games/${gameId}?key=${RAWG_API_KEY}`;
+          const detailRes = await fetch(detailUrl);
+          const detailData = await detailRes.json();
+          
+          if (detailData.stores) {
+            providers = detailData.stores.map(s => ({
+              name: s.store.name,
+              logoPath: s.store.image_background || ''
+            }));
+          }
+        }
+      } else {
+        // Fallback for games if no RAWG key is provided
+        providers = [
+          { name: 'Steam', logoPath: '' },
+          { name: 'PlayStation Store', logoPath: '' },
+          { name: 'Xbox Store', logoPath: '' }
+        ];
+      }
+    }
 
+    // Save and return
+    content.providers = providers;
+    content.providersFetched = true;
+    await content.save();
 
-
+    res.status(200).json({ success: true, data: providers });
+  } catch (error) {
+    console.log("Error in getContentProviders:", error);
+    res.status(500).json({ error: "Failed to get providers" });
+  }
+};

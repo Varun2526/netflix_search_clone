@@ -1,12 +1,35 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Play, Plus, Check, Star } from 'lucide-react';
-import { addToHistory, addToWishlist, rateContent } from '../api';
+import { addToHistory, addToWishlist, rateContent, getContentProviders } from '../api';
 
 export default function ContentDetailsModal({ item, isOpen, onClose }) {
   const [loadingAction, setLoadingAction] = useState(null);
   const [userRating, setUserRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [providers, setProviders] = useState([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen && item) {
+      const fetchProviders = async () => {
+        setLoadingProviders(true);
+        try {
+          const res = await getContentProviders(item._id);
+          if (res) {
+            setProviders(res);
+          }
+        } catch (error) {
+          console.error("Failed to fetch providers:", error);
+        } finally {
+          setLoadingProviders(false);
+        }
+      };
+      fetchProviders();
+    } else {
+      setProviders([]);
+    }
+  }, [isOpen, item]);
 
   if (!isOpen || !item) return null;
 
@@ -139,12 +162,22 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-3">Available On</h4>
                 <div className="flex flex-wrap gap-3">
-                  {(item.type?.toLowerCase() === 'game' ? ['Steam', 'PlayStation 5', 'Xbox Series X'] : ['Netflix', 'Prime Video', 'Hulu']).map(platform => (
-                    <div key={platform} className="px-4 py-2 rounded-lg bg-secondary/50 border border-border text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary/80" />
-                      {platform}
-                    </div>
-                  ))}
+                  {loadingProviders ? (
+                    <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  ) : providers.length > 0 ? (
+                    providers.map(platform => (
+                      <div key={platform.name} className="px-4 py-2 rounded-lg bg-secondary/50 border border-border text-sm font-medium hover:bg-secondary transition-colors cursor-pointer flex items-center gap-2">
+                        {platform.logoPath ? (
+                          <img src={platform.logoPath} alt={platform.name} className="w-5 h-5 rounded-sm object-cover" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-primary/80" />
+                        )}
+                        {platform.name}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Not currently available to stream/buy.</span>
+                  )}
                 </div>
               </div>
 

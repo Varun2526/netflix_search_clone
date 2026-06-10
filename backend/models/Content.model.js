@@ -84,6 +84,17 @@ const contentSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    providers: {
+      type: [{
+        name: String,
+        logoPath: String,
+      }],
+      default: [],
+    },
+    providersFetched: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

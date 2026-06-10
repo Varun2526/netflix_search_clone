@@ -71,6 +71,15 @@ export const getContentDetails = async (id) => {
   }
 };
 
+export const getContentProviders = async (id) => {
+  try {
+    const res = await api.get(`/content/${id}/providers`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to fetch providers');
+  }
+};
+
 export const addToHistory = async (contentId) => {
   try {
     const res = await api.post('/content/history', { contentId });
