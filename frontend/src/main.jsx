@@ -10,6 +10,7 @@ import Movies from './pages/Movies';
 import Games from './pages/Games';
 import Profile from './pages/Profile';
 import MyList from './pages/MyList';
+import Search from './pages/Search';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -56,6 +57,10 @@ function MainLayout() {
           <Route
             path="/wishlist"
             element={user ? <MyList /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/search"
+            element={user ? <Search /> : <Navigate to="/login" replace />}
           />
         </Routes>
       </div>

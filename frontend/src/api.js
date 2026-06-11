@@ -53,6 +53,15 @@ export const getRecommendedContent = async (userId) => {
   }
 };
 
+export const searchContent = async (query) => {
+  try {
+    const res = await api.get(`/content/search?query=${query}&limit=50&hasImage=true`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to search content');
+  }
+};
+
 export const getContentByType = async (type, limit = 100, hasImage = true) => {
   try {
     const res = await api.get(`/content/search?type=${type}&limit=${limit}&hasImage=${hasImage}`);

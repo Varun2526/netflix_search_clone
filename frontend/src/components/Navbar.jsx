@@ -21,6 +21,13 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && e.target.value.trim()) {
+      navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -75,6 +82,7 @@ export default function Navbar() {
                   <input
                     type="text"
                     placeholder="Search movies, games, or genres..."
+                    onKeyDown={handleSearch}
                     className="bg-secondary/50 border border-border text-sm rounded-full pl-10 pr-4 py-2 w-[280px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
                   />
                 </div>
@@ -120,6 +128,7 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search movies, games..."
+                onKeyDown={handleSearch}
                 className="w-full bg-secondary/50 border border-border text-base rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
               />
             </div>
