@@ -11,6 +11,7 @@ import Games from './pages/Games';
 import Profile from './pages/Profile';
 import MyList from './pages/MyList';
 import Search from './pages/Search';
+import Discover from './pages/Discover';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -61,6 +62,10 @@ function MainLayout() {
           <Route
             path="/search"
             element={user ? <Search /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/discover"
+            element={user ? <Discover /> : <Navigate to="/login" replace />}
           />
         </Routes>
       </div>

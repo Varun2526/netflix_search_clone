@@ -65,6 +65,7 @@ export default function Navbar() {
             {user && (
               <div className="hidden lg:flex items-center gap-6">
                 <Link to="/" className="text-foreground hover:text-primary transition-colors text-sm font-medium">Home</Link>
+                <Link to="/discover" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">For You</Link>
                 <Link to="/movies" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Movies</Link>
                 <Link to="/games" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Games</Link>
                 <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">My Wishlist</Link>
@@ -135,6 +136,7 @@ export default function Navbar() {
             
             <div className="flex flex-col gap-4 text-lg font-medium">
               <Link to="/" className="text-foreground hover:text-primary transition-colors py-2 border-b border-border">Home</Link>
+              <Link to="/discover" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">For You</Link>
               <Link to="/movies" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">Movies</Link>
               <Link to="/games" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">Games</Link>
               <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">My Wishlist</Link>

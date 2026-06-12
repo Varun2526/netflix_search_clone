@@ -22,11 +22,12 @@ export default function Profile() {
   const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
-    if (!user?._id) return;
+    const userId = user?._id || user?.id;
+    if (!userId) return;
     
     const fetchProfile = async () => {
       try {
-        const res = await getUserProfile(user._id);
+        const res = await getUserProfile(userId);
         if (res.data) {
           setProfile(res.data);
           setSelectedGenres(res.data.favoriteGenres || []);

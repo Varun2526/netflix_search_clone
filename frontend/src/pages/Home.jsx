@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import HeroBanner from '../components/HeroBanner';
 import ContentCarousel from '../components/ContentCarousel';
 import ContentDetailsModal from '../components/ContentDetailsModal';
-import { getTrendingContent, getRecommendedContent } from '../api';
+import { getTrendingContent, getRecommendedContent, getContentByType } from '../api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
@@ -35,8 +35,20 @@ export default function Home() {
       };
 
       try {
-        const trendingRes = await getTrendingContent();
-        const trendingMapped = mapData(trendingRes.data || []);
+        const moviesRes = await getContentByType('movie', 10, true);
+        const gamesRes = await getContentByType('game', 10, true);
+        
+        const movies = moviesRes.data || [];
+        const games = gamesRes.data || [];
+        
+        const combined = [];
+        const maxLength = Math.max(movies.length, games.length);
+        for(let i=0; i<maxLength; i++) {
+          if (movies[i]) combined.push(movies[i]);
+          if (games[i]) combined.push(games[i]);
+        }
+        
+        const trendingMapped = mapData(combined.slice(0, 16));
         setTrendingData(trendingMapped);
         
         // Pick 5 random items for the hero banner

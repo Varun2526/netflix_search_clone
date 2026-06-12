@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Film, Star } from 'lucide-react';
+import { Sparkles, Film } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
 import ContentDetailsModal from '../components/ContentDetailsModal';
-import { getContentByType } from '../api';
+import { getRecommendedContent } from '../api';
+import { useAuth } from '../context/AuthContext';
 
-export default function Movies() {
-  const [movies, setMovies] = useState([]);
+export default function Discover() {
+  const { user } = useAuth();
+  const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
-    const fetchMovies = async () => {
+    const fetchRecommendations = async () => {
+      if (!user) return;
+      
       setLoading(true);
       setError(null);
-      console.log('[Movies] Fetching all movies...');
       try {
-        const res = await getContentByType('movie', 25);
+        const res = await getRecommendedContent(user._id || user.id);
         const mapped = (res.data || []).map(item => ({
           ...item,
           id: item._id,
@@ -24,31 +27,30 @@ export default function Movies() {
           year: item.releaseYear,
           rating: item.averageRating,
         }));
-        console.log('[Movies] Fetched:', mapped.length, 'movies');
-        setMovies(mapped);
+        setRecommendations(mapped);
       } catch (err) {
-        console.error('[Movies] Error:', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchMovies();
-  }, []);
+    
+    fetchRecommendations();
+  }, [user]);
 
   return (
     <>
-      <main className="pt-28 pb-16 px-6 md:px-12 max-w-[1600px] mx-auto">
+      <main className="pt-28 pb-16 px-6 md:px-12 max-w-[1600px] mx-auto min-h-[80vh]">
         {/* Page Header */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <Film className="w-5 h-5 text-primary" />
+              <Sparkles className="w-5 h-5 text-primary" />
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">Movies</h1>
+            <h1 className="text-4xl font-bold tracking-tight">For You</h1>
           </div>
           <p className="text-muted-foreground mt-2">
-            Browse our complete collection of movies
+            Personalized recommendations based on your history, ratings, and wishlist.
           </p>
         </div>
 
@@ -64,15 +66,16 @@ export default function Movies() {
           <div className="flex justify-center items-center h-64">
             <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
           </div>
-        ) : movies.length === 0 ? (
+        ) : recommendations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
             <Film className="w-16 h-16 mb-4 opacity-30" />
-            <p className="text-lg">No movies found</p>
+            <p className="text-lg">No recommendations yet.</p>
+            <p className="text-sm mt-2">Start adding items to your wishlist or rating them to get personalized picks!</p>
           </div>
         ) : (
           /* Content Grid */
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-            {movies.map((item) => (
+            {recommendations.map((item) => (
               <ContentCard key={item.id || item._id} item={item} onClick={setSelectedItem} />
             ))}
           </div>
