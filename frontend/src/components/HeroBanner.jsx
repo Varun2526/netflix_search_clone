@@ -78,8 +78,8 @@ export default function HeroBanner({ items = [] }) {
                 <>
                   <span className="w-1 h-1 rounded-full bg-primary/50" />
                   <span className="flex items-center gap-1">
-                    <span className="text-primary font-bold text-base">{item.rating}</span>
-                    <span className="text-muted-foreground">/10</span>
+                    <span className="text-primary font-bold text-base">{(item.rating / 2).toFixed(1)}</span>
+                    <span className="text-muted-foreground">/5</span>
                   </span>
                 </>
               )}

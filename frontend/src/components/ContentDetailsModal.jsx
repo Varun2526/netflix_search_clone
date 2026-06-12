@@ -124,7 +124,7 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
               <span className="w-1 h-1 rounded-full bg-white/20" />
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 text-primary fill-primary" />
-                <span className="text-foreground font-medium">{item.rating}</span>
+                <span className="text-foreground font-medium">{item.rating ? (item.rating / 2).toFixed(1) : 0}</span>
                 <span>/ 5</span>
               </div>
             </div>
