@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Plus } from 'lucide-react';
+import { Info, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HeroBanner({ items = [] }) {
@@ -91,7 +91,7 @@ export default function HeroBanner({ items = [] }) {
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3.5 rounded-lg font-semibold transition-colors shadow-lg shadow-primary/20"
               >
-                <Play className="w-5 h-5 fill-current" />
+                <Info className="w-5 h-5" />
                 View Details
               </motion.button>
               
@@ -101,7 +101,7 @@ export default function HeroBanner({ items = [] }) {
                 className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-foreground border border-white/10 px-8 py-3.5 rounded-lg font-semibold transition-all backdrop-blur-sm"
               >
                 <Plus className="w-5 h-5" />
-                Add to Wishlist
+                Add to Watchlist
               </motion.button>
             </div>
           </motion.div>

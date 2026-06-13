@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ContentCard from './ContentCard';
 
-export default function ContentCarousel({ title, items, onItemClick }) {
+export default function ContentCarousel({ title, subtitle, items, onItemClick }) {
   const rowRef = useRef(null);
   const [isMoved, setIsMoved] = useState(false);
 
@@ -20,10 +20,15 @@ export default function ContentCarousel({ title, items, onItemClick }) {
 
   return (
     <div className="relative mb-12 last:mb-0">
-      <h2 className="text-2xl font-bold mb-6 px-6 md:px-12 text-foreground/90 tracking-tight">
-        {title}
-      </h2>
-      
+      <div className="mb-6 px-6 md:px-12">
+        <h2 className="text-2xl font-bold text-foreground/90 tracking-tight">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+        )}
+      </div>
+
       <div className="group relative">
         {/* Left Arrow */}
         <div 

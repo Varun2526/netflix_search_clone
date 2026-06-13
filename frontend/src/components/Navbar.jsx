@@ -68,7 +68,7 @@ export default function Navbar() {
                 <Link to="/discover" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">For You</Link>
                 <Link to="/movies" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Movies</Link>
                 <Link to="/games" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">Games</Link>
-                <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">My Wishlist</Link>
+                <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium">My Watchlist</Link>
               </div>
             )}
           </div>
@@ -139,7 +139,7 @@ export default function Navbar() {
               <Link to="/discover" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">For You</Link>
               <Link to="/movies" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">Movies</Link>
               <Link to="/games" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">Games</Link>
-              <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">My Wishlist</Link>
+              <Link to="/wishlist" className="text-muted-foreground hover:text-primary transition-colors py-2 border-b border-border">My Watchlist</Link>
               <button onClick={handleLogout} className="text-destructive text-left py-2 border-b border-border">Logout</button>
             </div>
           </div>

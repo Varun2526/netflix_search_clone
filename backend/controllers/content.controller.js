@@ -12,9 +12,12 @@ export const search = async (req, res) => {
     // create empty object
     const filters = {};
 
-    // search by title
+    // search by title OR genre
     if (query) {
-      filters.title = { $regex: query, $options: "i" };
+      filters.$or = [
+        { title: { $regex: query, $options: "i" } },
+        { genres: { $regex: query, $options: "i" } }
+      ];
     }
     // filter by movie or game
     if (type) {
@@ -100,6 +103,16 @@ export const addToHistory = async (req, res) => {
     }
     // create or update history
     await History.findOneAndUpdate({ userId, contentId }, {lastAccessedAt: new Date(),},{upsert: true,new: true,});
+
+    // also track on the user's recentlyViewed list so the recommender and
+    // profile have a behavior signal. Keep it deduped, most-recent-first, capped at 20.
+    await User.findByIdAndUpdate(userId, {
+      $pull: { recentlyViewed: contentId },
+    });
+    await User.findByIdAndUpdate(userId, {
+      $push: { recentlyViewed: { $each: [contentId], $position: 0, $slice: 20 } },
+    });
+
     // response
     res.status(200).json({success: true,message: "History updated successfully",});
   } 
@@ -224,123 +237,238 @@ export const rateContent = async (req, res) => {
 
 export const getRecommendations = async (req, res) => {
   try {
-    // get user id from query parameters
     const userId = req.user._id;
-
-    // check if user id is provided
     if (!userId) {
       return res.status(400).json({ success: false, message: "User ID is required" });
     }
 
-    // find user
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // 1. Gather all content IDs the user has interacted with
+    // 1. Gather every content id the user has already engaged with so we never
+    //    recommend something they have seen, wishlisted, or rated.
     const interactedContentIds = new Set();
-    user.recentlyViewed.forEach(id => interactedContentIds.add(id.toString()));
-    user.wishlist.forEach(id => interactedContentIds.add(id.toString()));
+    (user.recentlyViewed || []).forEach(id => interactedContentIds.add(id.toString()));
+    (user.wishlist || []).forEach(id => interactedContentIds.add(id.toString()));
 
-    // fetch user ratings to find rated content
     const userRatings = await Rating.find({ userId });
-    userRatings.forEach(r => interactedContentIds.add(r.contentId.toString()));
+    const ratingByContent = {}; // contentId -> score (1..5)
+    userRatings.forEach(r => {
+      interactedContentIds.add(r.contentId.toString());
+      ratingByContent[r.contentId.toString()] = r.score;
+    });
 
-    // 2. Determine user's favorite genres based on interactions
-    const favoriteGenresSet = new Set();
-    
-    // add explicitly favorited genres from user profile
-    if (user.favoriteGenres && user.favoriteGenres.length > 0) {
-      user.favoriteGenres.forEach(genre => favoriteGenresSet.add(genre));
-    }
+    // 2. Build a WEIGHTED genre-taste profile (content-based signal).
+    //    Each genre accumulates a weight: explicit favorites and wishlist/views add
+    //    positive weight; ratings add (score - 3) so a 5★ pushes a genre up (+2)
+    //    and a 1★ pushes it down (-2). This makes ratings actually steer the recs.
+    const genreWeights = {}; // genre -> number
+    const bump = (genres, amount) => {
+      (genres || []).forEach(g => { genreWeights[g] = (genreWeights[g] || 0) + amount; });
+    };
 
-    // fetch actual content objects of recently viewed and wishlist to extract genres
-    const interactedContent = await Content.find({_id: { $in: Array.from(interactedContentIds) }});
-    
+    (user.favoriteGenres || []).forEach(g => { genreWeights[g] = (genreWeights[g] || 0) + 3; });
+
+    const interactedContent = await Content.find({ _id: { $in: Array.from(interactedContentIds) } });
     interactedContent.forEach(item => {
-      if (item.genres) {
-        item.genres.forEach(genre => favoriteGenresSet.add(genre));
+      const rated = ratingByContent[item._id.toString()];
+      if (rated !== undefined) {
+        bump(item.genres, rated - 3); // -2 .. +2 based on the rating
+      } else {
+        bump(item.genres, 1); // viewed/wishlisted but not rated => mild positive
       }
     });
 
-    const favoriteGenres = Array.from(favoriteGenresSet);
+    // Only genres with net-positive weight count as "liked"
+    const likedGenres = Object.entries(genreWeights)
+      .filter(([, w]) => w > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([g]) => g);
 
-    // 3. Collaborative Filtering: Find similar users
-    // Users who have interacted with the same content
+    // 3. Collaborative filtering: find users who overlap with this user's items,
+    //    then count how often THEY engaged with items this user hasn't.
     const similarUsers = await User.find({
       _id: { $ne: userId },
       $or: [
         { recentlyViewed: { $in: Array.from(interactedContentIds) } },
         { wishlist: { $in: Array.from(interactedContentIds) } }
       ]
-    }).limit(50); // limit to top 50 similar users for performance
+    }).limit(50);
 
-    const collabContentScores = {}; // contentId -> score
-
+    const collabContentScores = {}; // contentId -> co-occurrence count
     similarUsers.forEach(simUser => {
-      // items similar user liked
-      const simUserItems = [...simUser.recentlyViewed, ...simUser.wishlist];
+      const simUserItems = [...(simUser.recentlyViewed || []), ...(simUser.wishlist || [])];
       simUserItems.forEach(itemId => {
         const idStr = itemId.toString();
-        // if current user hasn't interacted with it
         if (!interactedContentIds.has(idStr)) {
           collabContentScores[idStr] = (collabContentScores[idStr] || 0) + 1;
         }
       });
     });
 
-    // 4. Fallback: if no interactions or favorite genres, return top trending items
-    if (favoriteGenres.length === 0 && Object.keys(collabContentScores).length === 0) {
-      const fallbackContent = await Content.find({_id: { $nin: Array.from(interactedContentIds) }})
-                                          .sort({ popularityScore: -1 })
-                                          .limit(10);
+    // 4. Cold-start fallback: nothing to learn from yet -> show popular titles.
+    if (likedGenres.length === 0 && Object.keys(collabContentScores).length === 0) {
+      const fallbackContent = await Content.find({ _id: { $nin: Array.from(interactedContentIds) } })
+        .sort({ popularityScore: -1 })
+        .limit(12)
+        .lean();
 
-      return res.status(200).json({success: true,message: "No user preferences found. Showing popular content.",data: fallbackContent});
+      return res.status(200).json({
+        success: true,
+        message: "Tell us what you like by rating titles and adding to your wishlist.",
+        data: fallbackContent,
+        sections: [{ title: "Popular Right Now", reason: "Trending across all users", items: fallbackContent }],
+      });
     }
 
-    // 5. Recommendation Engine: fetch candidates
-    // We fetch candidates from collaborative filtering AND genre matching
+    // 5. Build the candidate pool from collaborative hits AND liked genres.
     const candidateIds = Object.keys(collabContentScores);
-    
-    // Fetch content for candidate IDs and genre matches
     const candidates = await Content.find({
       _id: { $nin: Array.from(interactedContentIds) },
       $or: [
         { _id: { $in: candidateIds } },
-        { genres: { $in: favoriteGenres } }
+        { genres: { $in: likedGenres } }
       ]
-    }).limit(100); // limit candidate pool size for speed
+    }).limit(150).lean();
 
-    // 6. Score candidates based on collaborative frequency, genre overlap, and rating
-    const scoredRecommendations = candidates.map(item => {
+    // 6. Hybrid score = collaborative co-occurrence + weighted genre match + quality.
+    const scored = candidates.map(item => {
       const idStr = item._id.toString();
-      
-      // Collaborative score (frequency from similar users)
-      const collabScore = (collabContentScores[idStr] || 0) * 3;
+      const collab = collabContentScores[idStr] || 0;
+      const collabScore = collab * 3;
 
-      // count how many genres match user's favorites
-      const matchingGenresCount = item.genres ? item.genres.filter(genre => favoriteGenres.includes(genre)).length : 0;
-      
-      // simple recommendation score formula:
-      // score = CollabScore + (number of matching genres * 2) + averageRating
-      const recommendationScore = collabScore + (matchingGenresCount * 2) + (item.averageRating || 0);
+      // sum the taste-weights of the genres this candidate shares with the user
+      const matchedGenres = (item.genres || []).filter(g => likedGenres.includes(g));
+      const genreScore = matchedGenres.reduce((s, g) => s + (genreWeights[g] || 0), 0);
 
-      return {content: item,score: recommendationScore};
+      const score = collabScore + genreScore * 1.5 + (item.averageRating || 0);
+
+      // pick the single best human-readable reason for this pick
+      let reason;
+      const topMatch = matchedGenres.sort((a, b) => (genreWeights[b] || 0) - (genreWeights[a] || 0))[0];
+      if (collab > 0 && collabScore >= genreScore) {
+        reason = "Popular with viewers like you";
+      } else if (topMatch) {
+        reason = `Because you like ${topMatch}`;
+      } else {
+        reason = "Recommended for you";
+      }
+
+      return { ...item, recScore: score, collab, matchedGenres, reason };
     });
 
-    // sort candidates by score in descending order
-    scoredRecommendations.sort((a, b) => b.score - a.score);
+    scored.sort((a, b) => b.recScore - a.recScore);
 
-    // select top 10 recommended items
-    const recommendations = scoredRecommendations.slice(0, 10).map(r => r.content);
+    // 7. Assemble explainable sections for the "For You" page.
+    const sections = [];
 
-    // send response
-    res.status(200).json({success: true,count: recommendations.length,data: recommendations});
-  } 
+    // Top Picks: the overall best of the hybrid ranking
+    const topPicks = scored.slice(0, 12);
+    if (topPicks.length) {
+      sections.push({ title: "Top Picks For You", reason: "Your best matches right now", items: topPicks });
+    }
+
+    // Collaborative section: items surfaced by similar users
+    const collabItems = scored.filter(i => i.collab > 0).sort((a, b) => b.collab - a.collab).slice(0, 12);
+    if (collabItems.length >= 4) {
+      sections.push({ title: "Popular With Viewers Like You", reason: "Loved by users with similar taste", items: collabItems });
+    }
+
+    // Per-genre content-based sections for the user's top 2 liked genres
+    likedGenres.slice(0, 2).forEach(genre => {
+      const items = scored.filter(i => (i.matchedGenres || []).includes(genre)).slice(0, 12);
+      if (items.length >= 4) {
+        sections.push({ title: `Because You Like ${genre}`, reason: `More ${genre} you might enjoy`, items });
+      }
+    });
+
+    // Flat list kept for backward compatibility (Home carousel still uses `data`).
+    res.status(200).json({
+      success: true,
+      count: topPicks.length,
+      data: topPicks,
+      sections,
+      taste: { likedGenres: likedGenres.slice(0, 5), ratedCount: userRatings.length },
+    });
+  }
   catch (error) {
     console.log("Error in getRecommendations:", error);
     res.status(500).json({ error: "Failed to get recommendations" });
+  }
+};
+
+// Content-based filtering for a single item: "More Like This".
+// Scores other content by how much it overlaps with the given item's
+// genres, cast, director, type and release year.
+export const getSimilarContent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const limit = parseInt(req.query.limit) || 12;
+
+    const base = await Content.findById(id);
+    if (!base) {
+      return res.status(404).json({ success: false, message: "Content not found" });
+    }
+
+    const baseGenres = base.genres || [];
+    const baseCast = base.cast || [];
+
+    // Pull a candidate pool that shares at least one attribute with the base item.
+    // We over-fetch then score in memory so we can rank by a weighted similarity.
+    const candidates = await Content.find({
+      _id: { $ne: base._id },
+      $or: [
+        { genres: { $in: baseGenres } },
+        { cast: { $in: baseCast } },
+        ...(base.director ? [{ director: base.director }] : []),
+      ],
+    })
+      .limit(200)
+      .lean();
+
+    const scored = candidates.map((item) => {
+      let score = 0;
+      const reasons = [];
+
+      // genre overlap is the strongest content signal
+      const sharedGenres = (item.genres || []).filter((g) => baseGenres.includes(g));
+      score += sharedGenres.length * 3;
+      if (sharedGenres.length) reasons.push(`${sharedGenres.slice(0, 2).join(", ")}`);
+
+      // shared cast members
+      const sharedCast = (item.cast || []).filter((c) => baseCast.includes(c));
+      score += sharedCast.length * 2;
+      if (sharedCast.length) reasons.push(`stars ${sharedCast[0]}`);
+
+      // same director is a strong "if you liked this creator" signal
+      if (base.director && item.director === base.director) {
+        score += 4;
+        reasons.push(`by ${base.director}`);
+      }
+
+      // same medium (movie vs game) keeps results coherent
+      if (item.type === base.type) score += 1;
+
+      // released around the same era
+      if (base.releaseYear && item.releaseYear && Math.abs(base.releaseYear - item.releaseYear) <= 5) {
+        score += 1;
+      }
+
+      // small nudge by quality so ties resolve toward better-rated titles
+      score += (item.averageRating || 0) / 10;
+
+      return { ...item, similarityScore: score, similarityReason: reasons[0] || "Similar title" };
+    });
+
+    scored.sort((a, b) => b.similarityScore - a.similarityScore);
+    const data = scored.slice(0, limit);
+
+    res.status(200).json({ success: true, count: data.length, data });
+  } catch (error) {
+    console.log("Error in getSimilarContent:", error);
+    res.status(500).json({ error: "Failed to get similar content" });
   }
 };
 

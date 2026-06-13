@@ -89,6 +89,15 @@ export const getContentDetails = async (id) => {
   }
 };
 
+export const getSimilarContent = async (id, limit = 12) => {
+  try {
+    const res = await api.get(`/content/${id}/similar?limit=${limit}`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to fetch similar content');
+  }
+};
+
 export const getContentProviders = async (id) => {
   try {
     const res = await api.get(`/content/${id}/providers`);

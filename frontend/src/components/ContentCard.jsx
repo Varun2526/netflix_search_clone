@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Star } from 'lucide-react';
+import { Info, Star } from 'lucide-react';
 
 export default function ContentCard({ item, onClick }) {
   const isMovie = item.type === 'movie';
@@ -57,14 +57,15 @@ export default function ContentCard({ item, onClick }) {
         </div>
       </div>
 
-      {/* Play Icon on Hover */}
+      {/* View Details cue on Hover */}
       <div className="absolute inset-0 z-20 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8 }}
           whileHover={{ scale: 1.1 }}
-          className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs md:text-sm font-semibold shadow-lg shadow-primary/30 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
         >
-          <Play className="w-4 h-4 md:w-5 md:h-5 text-primary-foreground fill-current ml-1" />
+          <Info className="w-4 h-4 md:w-5 md:h-5" />
+          Details
         </motion.div>
       </div>
     </motion.div>

@@ -68,3 +68,5 @@ __pycache__/
 # Optional: dependency lockfiles (uncomment if you don't commit locks)
 # package-lock.json
 # yarn.lock
+
+/.claude
