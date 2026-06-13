@@ -34,9 +34,11 @@ export const logout = async () => {
 };
 
 // --- Content APIs ---
-export const getTrendingContent = async () => {
+export const getTrendingContent = async (limit = 18, type) => {
   try {
-    const res = await api.get('/content/trending');
+    const params = new URLSearchParams({ limit });
+    if (type) params.set('type', type);
+    const res = await api.get(`/content/trending?${params.toString()}`);
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || 'Failed to fetch trending content');

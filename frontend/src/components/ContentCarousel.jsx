@@ -46,7 +46,9 @@ export default function ContentCarousel({ title, subtitle, items, onItemClick })
           className="flex items-center gap-4 md:gap-6 overflow-x-scroll scrollbar-hide px-6 md:px-12 scroll-smooth py-4"
         >
           {items.map((item) => (
-            <ContentCard key={item.id} item={item} onClick={onItemClick} />
+            <div key={item.id} className="flex-none w-[150px] sm:w-[180px] md:w-[220px]">
+              <ContentCard item={item} onClick={onItemClick} />
+            </div>
           ))}
         </div>
 
