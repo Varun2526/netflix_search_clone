@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { X, Play, Plus, Check, Star } from 'lucide-react';
 import { addToHistory, addToWishlist, rateContent, getContentProviders } from '../api';
 
@@ -206,7 +207,18 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
             <div className="space-y-4 pt-8 border-t border-white/10">
               <div className="flex gap-4 text-sm">
                 <span className="text-muted-foreground w-24 shrink-0">Genres</span>
-                <span className="text-foreground">{item.genres.join(', ')}</span>
+                <div className="flex flex-wrap gap-2">
+                  {item.genres.map((genre, i) => (
+                    <Link
+                      key={i}
+                      to={`/genre/${encodeURIComponent(genre)}`}
+                      onClick={onClose}
+                      className="px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+                    >
+                      {genre}
+                    </Link>
+                  ))}
+                </div>
               </div>
               {item.director && (
                 <div className="flex gap-4 text-sm">

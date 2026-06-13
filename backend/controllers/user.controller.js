@@ -79,3 +79,36 @@ export const getHistory = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch history' });
   }
 };
+
+// ── UPDATE PROFILE ──
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { username, email, avatar } = req.body;
+
+    const updateFields = {};
+    if (username) updateFields.username = username.trim();
+    if (email) updateFields.email = email.trim().toLowerCase();
+    if (avatar !== undefined) updateFields.avatar = avatar.trim();
+
+    if (Object.keys(updateFields).length === 0) {
+      return res.status(400).json({ success: false, message: "No fields to update" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateFields, { new: true, runValidators: true }).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Profile updated successfully", data: updatedUser });
+  } catch (error) {
+    // handle duplicate key errors (username or email already taken)
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(409).json({ success: false, message: `${field} is already taken` });
+    }
+    console.error("Error in updateProfile:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+};

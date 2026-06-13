@@ -12,6 +12,7 @@ import Profile from './pages/Profile';
 import MyList from './pages/MyList';
 import Search from './pages/Search';
 import Discover from './pages/Discover';
+import Genre from './pages/Genre';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -66,6 +67,10 @@ function MainLayout() {
           <Route
             path="/discover"
             element={user ? <Discover /> : <Navigate to="/login" replace />}
+          />
+          <Route
+            path="/genre/:name"
+            element={user ? <Genre /> : <Navigate to="/login" replace />}
           />
         </Routes>
       </div>

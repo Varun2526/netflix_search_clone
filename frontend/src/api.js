@@ -53,21 +53,30 @@ export const getRecommendedContent = async (userId) => {
   }
 };
 
-export const searchContent = async (query) => {
+export const searchContent = async (query, page = 1, limit = 25) => {
   try {
-    const res = await api.get(`/content/search?query=${query}&limit=50&hasImage=true`);
+    const res = await api.get(`/content/search?query=${query}&limit=${limit}&page=${page}&hasImage=true`);
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || 'Failed to search content');
   }
 };
 
-export const getContentByType = async (type, limit = 100, hasImage = true) => {
+export const getContentByType = async (type, limit = 25, hasImage = true, page = 1) => {
   try {
-    const res = await api.get(`/content/search?type=${type}&limit=${limit}&hasImage=${hasImage}`);
+    const res = await api.get(`/content/search?type=${type}&limit=${limit}&hasImage=${hasImage}&page=${page}`);
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || `Failed to fetch ${type}s`);
+  }
+};
+
+export const searchByGenre = async (genre, page = 1, limit = 25) => {
+  try {
+    const res = await api.get(`/content/search?genre=${encodeURIComponent(genre)}&limit=${limit}&page=${page}&hasImage=true`);
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to fetch genre content');
   }
 };
 
@@ -159,5 +168,14 @@ export const getHistory = async () => {
     return res.data;
   } catch (err) {
     throw new Error(err.response?.data?.message || 'Failed to fetch history');
+  }
+};
+
+export const updateUserProfile = async (data) => {
+  try {
+    const res = await api.put('/user/profile', data);
+    return res.data;
+  } catch (err) {
+    throw new Error(err.response?.data?.message || 'Failed to update profile');
   }
 };

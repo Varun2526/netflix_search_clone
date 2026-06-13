@@ -8,7 +8,7 @@ export const search = async (req, res) => {
   try {
     // get data from url
     // get data from url
-    const { query, type, genre, limit = 20, hasImage } = req.query;
+    const { query, type, genre, limit = 20, page = 1, hasImage } = req.query;
     // create empty object
     const filters = {};
 
@@ -29,12 +29,16 @@ export const search = async (req, res) => {
       filters.posterImage = { $exists: true, $ne: "" };
     }
 
-    // find data from database
+    // find data from database with pagination
     const parsedLimit = parseInt(limit);
-    const queryBuilder = Content.find(filters).sort({ popularityScore: -1 });
+    const parsedPage = Math.max(1, parseInt(page));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    const totalCount = await Content.countDocuments(filters);
+    const queryBuilder = Content.find(filters).sort({ popularityScore: -1 }).skip(skip);
     const data = await (parsedLimit === 0 ? queryBuilder : queryBuilder.limit(Math.min(parsedLimit, 200)));
     // send response
-    res.status(200).json({ success: true, count: data.length, data: data, });
+    res.status(200).json({ success: true, count: data.length, totalCount, page: parsedPage, data: data, });
   }
   catch (error) {
     console.log("Error in search:", error);

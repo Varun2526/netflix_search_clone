@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Play, Star } from 'lucide-react';
 
@@ -44,9 +45,14 @@ export default function ContentCard({ item, onClick }) {
 
         <div className="hidden md:flex gap-1 md:gap-2">
           {item.genres?.slice(0, 2).map((genre, i) => (
-            <span key={i} className="text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-sm bg-white/10 border border-white/5 backdrop-blur-sm">
+            <Link
+              key={i}
+              to={`/genre/${encodeURIComponent(genre)}`}
+              onClick={(e) => e.stopPropagation()}
+              className="text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-sm bg-white/10 border border-white/5 backdrop-blur-sm hover:bg-primary/20 hover:border-primary/30 hover:text-primary transition-colors"
+            >
               {genre}
-            </span>
+            </Link>
           ))}
         </div>
       </div>

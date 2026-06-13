@@ -1,11 +1,14 @@
 import { Router } from "express";
-import { getUserProfile, updateFavoriteGenres, getWishlist, getHistory } from "../controllers/user.controller.js";
+import { getUserProfile, updateFavoriteGenres, getWishlist, getHistory, updateProfile } from "../controllers/user.controller.js";
 import { verifyToken } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 // route to get user profile details
 router.get("/profile/:id", verifyToken, getUserProfile);
+
+// route to update user profile (username, email, avatar)
+router.put("/profile", verifyToken, updateProfile);
 
 // route to update user favorite genres
 router.put("/favorite-genres", verifyToken, updateFavoriteGenres);
