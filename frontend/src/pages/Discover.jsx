@@ -81,7 +81,7 @@ export default function Discover() {
                 </span>
               ))}
               {taste.ratedCount > 0 && (
-                <span className="text-xs text-muted-foreground ml-auto">{taste.ratedCount} titles rated</span>
+                <span className="text-xs text-muted-foreground ml-auto">{taste.ratedCount} {taste.ratedCount === 1 ? 'title' : 'titles'} rated</span>
               )}
             </div>
           )}

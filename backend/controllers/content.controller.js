@@ -308,18 +308,41 @@ export const getRecommendations = async (req, res) => {
       });
     });
 
-    // 4. Cold-start fallback: nothing to learn from yet -> show popular titles.
+    // 4. Cold-start fallback: nothing to learn from yet -> show several popular
+    //    rows (overall, movies, games) so the page still feels full.
     if (likedGenres.length === 0 && Object.keys(collabContentScores).length === 0) {
-      const fallbackContent = await Content.find({ _id: { $nin: Array.from(interactedContentIds) } })
-        .sort({ popularityScore: -1 })
-        .limit(12)
-        .lean();
+      const exclude = Array.from(interactedContentIds);
+      const [popular, popularMovies, popularGames] = await Promise.all([
+        Content.find({ _id: { $nin: exclude } }).sort({ popularityScore: -1 }).limit(16).lean(),
+        Content.find({ _id: { $nin: exclude }, type: "movie" }).sort({ popularityScore: -1 }).limit(16).lean(),
+        Content.find({ _id: { $nin: exclude }, type: "game" }).sort({ popularityScore: -1 }).limit(16).lean(),
+      ]);
+
+      // dedupe across the cold-start rows too
+      const used = new Set();
+      const dedupe = (items, n) => {
+        const out = [];
+        for (const it of items) {
+          const id = it._id.toString();
+          if (!used.has(id)) { out.push(it); used.add(id); }
+          if (out.length >= n) break;
+        }
+        return out;
+      };
+
+      const coldSections = [];
+      const top = dedupe(popular, 12);
+      if (top.length) coldSections.push({ title: "Popular Right Now", reason: "Trending across all users", items: top });
+      const m = dedupe(popularMovies, 12);
+      if (m.length >= 4) coldSections.push({ title: "Popular Movies", reason: "Most-watched films", items: m });
+      const g = dedupe(popularGames, 12);
+      if (g.length >= 4) coldSections.push({ title: "Popular Games", reason: "Most-played games", items: g });
 
       return res.status(200).json({
         success: true,
-        message: "Tell us what you like by rating titles and adding to your wishlist.",
-        data: fallbackContent,
-        sections: [{ title: "Popular Right Now", reason: "Trending across all users", items: fallbackContent }],
+        message: "Rate titles and add to your watchlist to unlock personalized picks.",
+        data: top,
+        sections: coldSections,
       });
     }
 
@@ -331,7 +354,7 @@ export const getRecommendations = async (req, res) => {
         { _id: { $in: candidateIds } },
         { genres: { $in: likedGenres } }
       ]
-    }).limit(150).lean();
+    }).limit(250).lean();
 
     // 6. Hybrid score = collaborative co-occurrence + weighted genre match + quality.
     const scored = candidates.map(item => {
@@ -361,28 +384,60 @@ export const getRecommendations = async (req, res) => {
 
     scored.sort((a, b) => b.recScore - a.recScore);
 
-    // 7. Assemble explainable sections for the "For You" page.
+    // 7. Assemble explainable sections. CRITICAL: an item appears in only ONE
+    //    section. `take` pulls the best not-yet-used items from a pool so every
+    //    row shows distinct titles (Netflix/Amazon style), never repeats.
+    const used = new Set();
+    const take = (pool, n) => {
+      const out = [];
+      for (const it of pool) {
+        const id = it._id.toString();
+        if (!used.has(id)) { out.push(it); used.add(id); }
+        if (out.length >= n) break;
+      }
+      return out;
+    };
+
     const sections = [];
 
     // Top Picks: the overall best of the hybrid ranking
-    const topPicks = scored.slice(0, 12);
+    const topPicks = take(scored, 12);
     if (topPicks.length) {
       sections.push({ title: "Top Picks For You", reason: "Your best matches right now", items: topPicks });
     }
 
-    // Collaborative section: items surfaced by similar users
-    const collabItems = scored.filter(i => i.collab > 0).sort((a, b) => b.collab - a.collab).slice(0, 12);
-    if (collabItems.length >= 4) {
-      sections.push({ title: "Popular With Viewers Like You", reason: "Loved by users with similar taste", items: collabItems });
-    }
-
-    // Per-genre content-based sections for the user's top 2 liked genres
-    likedGenres.slice(0, 2).forEach(genre => {
-      const items = scored.filter(i => (i.matchedGenres || []).includes(genre)).slice(0, 12);
-      if (items.length >= 4) {
+    // Per-genre content-based rows for the user's top liked genres (deep cuts,
+    // since the very best already went to Top Picks)
+    likedGenres.slice(0, 4).forEach(genre => {
+      const pool = scored.filter(i => (i.matchedGenres || []).includes(genre));
+      const items = take(pool, 12);
+      if (items.length >= 3) {
         sections.push({ title: `Because You Like ${genre}`, reason: `More ${genre} you might enjoy`, items });
       }
     });
+
+    // Collaborative section: items surfaced by similar users
+    const collabPool = scored.filter(i => i.collab > 0).sort((a, b) => b.collab - a.collab);
+    const collabItems = take(collabPool, 12);
+    if (collabItems.length >= 3) {
+      sections.push({ title: "Popular With Viewers Like You", reason: "Loved by users with similar taste", items: collabItems });
+    }
+
+    // Per-type rows guarantee variety even when the user likes few genres
+    const movieItems = take(scored.filter(i => i.type === "movie"), 12);
+    if (movieItems.length >= 3) {
+      sections.push({ title: "Movies Picked For You", reason: "Films matched to your taste", items: movieItems });
+    }
+    const gameItems = take(scored.filter(i => i.type === "game"), 12);
+    if (gameItems.length >= 3) {
+      sections.push({ title: "Games Picked For You", reason: "Games matched to your taste", items: gameItems });
+    }
+
+    // Catch-all: any remaining high-scored items the rows above didn't cover
+    const more = take(scored, 12);
+    if (more.length >= 4) {
+      sections.push({ title: "More To Explore", reason: "Fresh picks based on your taste", items: more });
+    }
 
     // Flat list kept for backward compatibility (Home carousel still uses `data`).
     res.status(200).json({
