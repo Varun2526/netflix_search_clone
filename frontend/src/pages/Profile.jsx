@@ -20,6 +20,7 @@ export default function Profile() {
   
   const [selectedGenres, setSelectedGenres] = useState([]);
   const [savingGenres, setSavingGenres] = useState(false);
+  const [genreMsg, setGenreMsg] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
   // Account Settings state
@@ -72,13 +73,15 @@ export default function Profile() {
 
   const handleSaveGenres = async () => {
     setSavingGenres(true);
+    setGenreMsg(null);
     try {
       await updateFavoriteGenres(selectedGenres);
-      alert('Favorite genres updated successfully!');
+      setGenreMsg({ type: 'success', text: 'Preferences saved — your recommendations will update.' });
     } catch (err) {
-      alert('Failed to update favorite genres');
+      setGenreMsg({ type: 'error', text: 'Failed to update favorite genres.' });
     } finally {
       setSavingGenres(false);
+      setTimeout(() => setGenreMsg(null), 3000);
     }
   };
 
@@ -185,13 +188,20 @@ export default function Profile() {
                 </button>
               ))}
             </div>
-            <button 
-              onClick={handleSaveGenres}
-              disabled={savingGenres}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-lg font-semibold transition-all disabled:opacity-50"
-            >
-              {savingGenres ? 'Saving...' : 'Save Preferences'}
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSaveGenres}
+                disabled={savingGenres}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2.5 rounded-lg font-semibold transition-all disabled:opacity-50"
+              >
+                {savingGenres ? 'Saving...' : 'Save Preferences'}
+              </button>
+              {genreMsg && (
+                <span className={`text-sm ${genreMsg.type === 'success' ? 'text-green-400' : 'text-destructive'}`}>
+                  {genreMsg.text}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Viewing History */}

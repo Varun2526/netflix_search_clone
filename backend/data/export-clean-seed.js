@@ -26,6 +26,10 @@ for (const type of Object.keys(CAPS)) {
     .sort({ popularityScore: -1, averageRating: -1 })
     .limit(CAPS[type])
     .lean();
+  // Drop _id and __v so mongoimport generates proper ObjectId _ids.
+  // (Keeping the stringified _id makes mongoimport store it as a String,
+  // which breaks every findById lookup downstream.)
+  docs.forEach((d) => { delete d._id; delete d.__v; });
   console.log(`${type}: kept ${docs.length} (cap ${CAPS[type]})`);
   all = all.concat(docs);
 }

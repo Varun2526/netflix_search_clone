@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
@@ -15,13 +15,10 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    console.log('[Register] Submitting:', { username, email });
     try {
       await register(username, email, password);
-      console.log('[Register] Success, navigating to /');
       navigate('/');
     } catch (err) {
-      console.error('[Register] Error:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -85,7 +82,7 @@ export default function Register() {
         </form>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <a href="/login" className="text-primary hover:underline font-medium">Sign in</a>
+          <Link to="/login" className="text-primary hover:underline font-medium">Sign in</Link>
         </p>
       </div>
     </div>
