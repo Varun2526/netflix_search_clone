@@ -8,9 +8,30 @@ import userRoutes from "./routes/user.routes.js";
 const app = express();
 
 // middleware
-app.use(cors({ 
-  origin: process.env.CLIENT_URL ? [process.env.CLIENT_URL] : ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"], 
-  credentials: true 
+// Allow the configured production client, local dev ports, and any Vercel
+// deployment URL (preview URLs change on every deploy).
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // allow non-browser requests (curl, health checks) which send no origin
+    if (!origin) return cb(null, true);
+    try {
+      const host = new URL(origin).hostname;
+      if (allowedOrigins.includes(origin) || host.endsWith(".vercel.app")) {
+        return cb(null, true);
+      }
+    } catch {
+      // fall through to rejection
+    }
+    return cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
 }));
 app.use(express.json());
 app.use(cookieParser());
