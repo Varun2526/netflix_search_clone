@@ -1,28 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Info, Plus } from 'lucide-react';
+import { Info, Plus, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { addToWishlist } from '../api';
 
-export default function HeroBanner({ items = [] }) {
+export default function HeroBanner({ items = [], onSelect }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [wishStatus, setWishStatus] = useState('idle'); // idle | adding | added | error
 
-  useEffect(() => {
-    // Auto-scroll removed for better accessibility
-    // Users can manually navigate via the indicators
-  }, [items]);
+  // reset the watchlist button state when the slide changes
+  useEffect(() => { setWishStatus('idle'); }, [currentIndex]);
 
   if (!items || items.length === 0) {
     return <div className="relative h-[85vh] w-full bg-background" />;
   }
 
   const item = items[currentIndex];
-  // Use the poster image as the background for the hero banner
-  const bgImage = item.posterUrl;
+  // Prefer a landscape banner; fall back to the (portrait) poster.
+  const bgImage = item.bannerImage || item.posterUrl;
+  // Posters are portrait, so anchor to the top to avoid an awkward middle crop.
+  const bgPosition = item.bannerImage ? 'center' : 'top';
+
+  const handleWishlist = async () => {
+    if (!item?._id) return;
+    setWishStatus('adding');
+    try {
+      await addToWishlist(item._id);
+      setWishStatus('added');
+      setTimeout(() => setWishStatus('idle'), 2500);
+    } catch {
+      setWishStatus('error');
+      setTimeout(() => setWishStatus('idle'), 2500);
+    }
+  };
 
   return (
     <div className="relative h-[85vh] w-full flex items-center justify-start overflow-hidden">
-      {/* Background Image Container with AnimatePresence for smooth transitions */}
+      {/* Background */}
       <AnimatePresence mode="wait">
-        <motion.div 
+        <motion.div
           key={currentIndex}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -30,14 +45,14 @@ export default function HeroBanner({ items = [] }) {
           transition={{ duration: 1 }}
           className="absolute inset-0 z-0"
         >
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ 
+          <div
+            className="absolute inset-0 bg-cover"
+            style={{
               backgroundImage: `url("${bgImage}")`,
-              filter: 'brightness(0.6)'
+              backgroundPosition: bgPosition,
+              filter: 'brightness(0.8)',
             }}
           />
-          {/* Multi-stop gradient for the true cinema feel */}
           <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
         </motion.div>
@@ -46,24 +61,24 @@ export default function HeroBanner({ items = [] }) {
       {/* Content */}
       <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 md:px-12 mt-20">
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div
             key={currentIndex}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
             className="max-w-2xl"
           >
             <div className="inline-block px-3 py-1 rounded-full border border-primary/50 bg-primary/10 text-primary text-xs font-semibold tracking-wider mb-6 backdrop-blur-sm uppercase">
               Featured {item.type || 'Content'}
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tighter drop-shadow-lg">
               {item.title}
             </h1>
-            
+
             <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl line-clamp-3 drop-shadow-md">
-              {item.description || "Experience the next great adventure right here."}
+              {item.description || 'Experience the next great adventure right here.'}
             </p>
 
             <div className="flex items-center gap-6 mb-10 text-sm font-medium text-foreground/80 drop-shadow-md">
@@ -86,22 +101,25 @@ export default function HeroBanner({ items = [] }) {
             </div>
 
             <div className="flex items-center gap-4">
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => onSelect?.(item)}
                 className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3.5 rounded-lg font-semibold transition-colors shadow-lg shadow-primary/20"
               >
                 <Info className="w-5 h-5" />
                 View Details
               </motion.button>
-              
-              <motion.button 
+
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-foreground border border-white/10 px-8 py-3.5 rounded-lg font-semibold transition-all backdrop-blur-sm"
+                onClick={handleWishlist}
+                disabled={wishStatus === 'adding' || wishStatus === 'added'}
+                className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-foreground border border-white/10 px-8 py-3.5 rounded-lg font-semibold transition-all backdrop-blur-sm disabled:opacity-70"
               >
-                <Plus className="w-5 h-5" />
-                Add to Watchlist
+                {wishStatus === 'added' ? <Check className="w-5 h-5 text-green-400" /> : <Plus className="w-5 h-5" />}
+                {wishStatus === 'adding' ? 'Adding…' : wishStatus === 'added' ? 'Added to Watchlist' : wishStatus === 'error' ? 'Try again' : 'Add to Watchlist'}
               </motion.button>
             </div>
           </motion.div>

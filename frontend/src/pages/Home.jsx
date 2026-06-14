@@ -80,8 +80,10 @@ export default function Home() {
       const topGames = fresh(withImages(gamesRes.data));
       if (topGames.length >= 3) builtRows.push({ title: 'Top Games', subtitle: 'Acclaimed games worth playing', items: topGames });
 
-      // Hero spotlight from the trending mix (fall back to movies)
-      const heroPool = (trending.length ? trending : topMovies).slice(0, 8);
+      // Hero spotlight: prefer items with a landscape bannerImage so the hero
+      // isn't a cropped portrait poster; fall back to trending, then movies.
+      const bannered = trending.filter((i) => i.bannerImage);
+      const heroPool = (bannered.length >= 3 ? bannered : (trending.length ? trending : topMovies)).slice(0, 8);
       setHeroItems([...heroPool].sort(() => 0.5 - Math.random()).slice(0, 5));
 
       setRows(builtRows);
@@ -94,7 +96,7 @@ export default function Home() {
   return (
     <>
       <main>
-        <HeroBanner items={heroItems} />
+        <HeroBanner items={heroItems} onSelect={setSelectedItem} />
 
         <div className="relative z-20 -mt-12 md:-mt-8 pb-12 pt-8">
           {isLoading ? (
