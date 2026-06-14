@@ -1,9 +1,15 @@
 import axios from 'axios';
 
+// In production set VITE_API_URL to the backend's base URL (e.g. https://kairo-backend.onrender.com).
+// In dev it defaults to the local backend.
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3131';
+
 const api = axios.create({
-  baseURL: 'http://localhost:3131/api',
-  withCredentials: true, // This replaces credentials: 'include'
+  baseURL: `${API_BASE}/api`,
+  withCredentials: true, // send/receive the auth cookie cross-origin
 });
+
+export default api;
 
 // --- Auth APIs ---
 export const login = async (email, password) => {

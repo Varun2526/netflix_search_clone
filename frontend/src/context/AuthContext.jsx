@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 
 const AuthContext = createContext(null);
 
@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       console.log('[AuthContext] Checking existing session...');
       try {
-        const res = await axios.get('/api/auth/me', { withCredentials: true });
+        const res = await api.get('/auth/me');
         console.log('[AuthContext] /me response:', res.data);
         if (res.data.success) {
           setUser(res.data.payload);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     console.log('[AuthContext] Logging in with:', email);
     try {
-      const res = await axios.post('/api/auth/login', { email, password }, { withCredentials: true });
+      const res = await api.post('/auth/login', { email, password });
       console.log('[AuthContext] Login success:', res.data);
       setUser(res.data.payload);
       return res.data;
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (username, email, password) => {
     console.log('[AuthContext] Registering user:', { username, email });
     try {
-      const res = await axios.post('/api/auth/register', { username, email, password }, { withCredentials: true });
+      const res = await api.post('/auth/register', { username, email, password });
       console.log('[AuthContext] Register success:', res.data);
       setUser(res.data.payload);
       return res.data;
@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     console.log('[AuthContext] Logging out...');
     try {
-      await axios.post('/api/auth/logout', {}, { withCredentials: true });
+      await api.post('/auth/logout', {});
       console.log('[AuthContext] Logout success');
       setUser(null);
     } catch (err) {

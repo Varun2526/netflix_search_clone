@@ -12,11 +12,13 @@ export const search = async (req, res) => {
     // create empty object
     const filters = {};
 
-    // search by title OR genre
+    // search by title, genre, tags (e.g. "Horror" for games), or cast member
     if (query) {
       filters.$or = [
         { title: { $regex: query, $options: "i" } },
-        { genres: { $regex: query, $options: "i" } }
+        { genres: { $regex: query, $options: "i" } },
+        { tags: { $regex: query, $options: "i" } },
+        { cast: { $regex: query, $options: "i" } }
       ];
     }
     // filter by movie or game

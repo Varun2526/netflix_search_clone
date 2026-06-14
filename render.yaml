@@ -1,0 +1,24 @@
+# Render Blueprint for the KAIRO backend (Express API).
+# Deploy: Render Dashboard -> New -> Blueprint -> pick this repo.
+# Then fill the env vars marked sync:false in the dashboard.
+services:
+  - type: web
+    name: kairo-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_URL
+        sync: false        # your MongoDB Atlas connection string
+      - key: JWT_SECRET
+        sync: false        # any long random string
+      - key: CLIENT_URL
+        sync: false        # your Vercel frontend URL, e.g. https://kairo.vercel.app
+      - key: TMDB_API_KEY
+        sync: false        # optional, for "Where to watch" providers
+# Note: do NOT set PORT — Render injects it and server.js reads process.env.PORT.
