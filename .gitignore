@@ -70,3 +70,6 @@ __pycache__/
 # yarn.lock
 
 /.claude
+
+# Interview Prep
+mern_interview_questions.md
