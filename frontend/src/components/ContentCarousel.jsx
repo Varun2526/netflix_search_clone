@@ -29,10 +29,10 @@ export default function ContentCarousel({ title, subtitle, items, onItemClick })
         )}
       </div>
 
-      <div className="group relative">
+      <div className="group/carousel relative">
         {/* Left Arrow */}
         <div 
-          className={`absolute top-0 bottom-0 left-0 z-40 w-12 md:w-16 bg-gradient-to-r from-background to-transparent flex items-center justify-start px-2 md:px-4 cursor-pointer transition-opacity duration-300 opacity-0 group-hover:opacity-100 ${!isMoved && 'hidden'}`}
+          className={`absolute top-0 bottom-0 left-0 z-40 w-12 md:w-16 bg-gradient-to-r from-background to-transparent flex items-center justify-start px-2 md:px-4 cursor-pointer transition-opacity duration-300 opacity-0 group-hover/carousel:opacity-100 ${!isMoved && 'hidden'}`}
           onClick={() => handleClick('left')}
         >
           <div className="w-10 h-10 rounded-full bg-black/50 border border-white/10 flex items-center justify-center backdrop-blur-md hover:bg-black/80 hover:border-primary/50 transition-colors">
@@ -54,7 +54,7 @@ export default function ContentCarousel({ title, subtitle, items, onItemClick })
 
         {/* Right Arrow */}
         <div 
-          className="absolute top-0 bottom-0 right-0 z-40 w-12 md:w-16 bg-gradient-to-l from-background to-transparent flex items-center justify-end px-2 md:px-4 cursor-pointer transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+          className="absolute top-0 bottom-0 right-0 z-40 w-12 md:w-16 bg-gradient-to-l from-background to-transparent flex items-center justify-end px-2 md:px-4 cursor-pointer transition-opacity duration-300 opacity-0 group-hover/carousel:opacity-100"
           onClick={() => handleClick('right')}
         >
           <div className="w-10 h-10 rounded-full bg-black/50 border border-white/10 flex items-center justify-center backdrop-blur-md hover:bg-black/80 hover:border-primary/50 transition-colors">

@@ -16,7 +16,7 @@ export default function HeroBanner({ items = [], onSelect }) {
 
   const item = items[currentIndex];
   // Prefer a landscape banner; fall back to the (portrait) poster.
-  const bgImage = item.bannerImage || item.posterUrl;
+  const bgImage = item.bannerImage || item.posterImage;
   // Posters are portrait, so anchor to the top to avoid an awkward middle crop.
   const bgPosition = item.bannerImage ? 'center' : 'top';
 

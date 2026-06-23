@@ -9,6 +9,7 @@ export default function Navbar() {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -21,11 +22,26 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const handleSearch = (e) => {
-    if (e.key === 'Enter' && e.target.value.trim()) {
-      navigate(`/search?q=${encodeURIComponent(e.target.value.trim())}`);
+  // Debounce search effect
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm.trim() !== '') {
+        navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, navigate]);
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
       setIsMobileMenuOpen(false);
     }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleLogout = async () => {
@@ -83,7 +99,9 @@ export default function Navbar() {
                   <input
                     type="text"
                     placeholder="Search movies, games, or genres..."
-                    onKeyDown={handleSearch}
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    onKeyDown={handleSearchKeyDown}
                     className="bg-secondary/50 border border-border text-sm rounded-full pl-10 pr-4 py-2 w-[280px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
                   />
                 </div>
@@ -129,7 +147,9 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search movies, games..."
-                onKeyDown={handleSearch}
+                value={searchTerm}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
                 className="w-full bg-secondary/50 border border-border text-base rounded-xl pl-12 pr-4 py-3 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
               />
             </div>

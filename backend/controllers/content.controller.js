@@ -14,8 +14,14 @@ export const search = async (req, res) => {
 
     // search by title, genre, tags (e.g. "Horror" for games), or cast member
     if (query) {
+      // Create a super flexible regex that ignores spaces and hyphens entirely
+      // "ironman" -> "i[-\s]*r[-\s]*o[-\s]*n[-\s]*m[-\s]*a[-\s]*n" matches "Iron Man"
+      const cleanQuery = query.replace(/[-\s]+/g, '');
+      const escapedChars = cleanQuery.split('').map(char => char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'));
+      const flexibleQuery = escapedChars.join('[-\\s]*');
+
       filters.$or = [
-        { title: { $regex: query, $options: "i" } },
+        { title: { $regex: flexibleQuery, $options: "i" } },
         { genres: { $regex: query, $options: "i" } },
         { tags: { $regex: query, $options: "i" } },
         { cast: { $regex: query, $options: "i" } }
