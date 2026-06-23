@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Info, Plus, Check } from 'lucide-react';
+import { Info, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { addToWishlist } from '../api';
 
@@ -10,15 +10,27 @@ export default function HeroBanner({ items = [], onSelect }) {
   // reset the watchlist button state when the slide changes
   useEffect(() => { setWishStatus('idle'); }, [currentIndex]);
 
+  const goPrev = () => setCurrentIndex((i) => (i - 1 + items.length) % items.length);
+  const goNext = () => setCurrentIndex((i) => (i + 1) % items.length);
+
   if (!items || items.length === 0) {
     return <div className="relative h-[85vh] w-full bg-background" />;
   }
 
   const item = items[currentIndex];
-  // Prefer a landscape banner; fall back to the (portrait) poster.
-  const bgImage = item.bannerImage || item.posterImage;
-  // Posters are portrait, so anchor to the top to avoid an awkward middle crop.
-  const bgPosition = item.bannerImage ? 'center' : 'top';
+  // The stored banner is Steam's washed-out "storepagebackground" art. Derive
+  // the vivid landscape hero art (library_hero.jpg) from the Steam app id;
+  // fall back to the banner/poster on error.
+  const posterSrc = item.posterImage || item.posterUrl;
+  const m = (posterSrc && posterSrc.match(/\/apps\/(\d+)\//)) ||
+            (item.bannerImage && item.bannerImage.match(/\/app\/(\d+)/)) || [];
+  const steamAppId = m[1];
+  const heroImg = steamAppId
+    ? `https://steamcdn-a.akamaihd.net/steam/apps/${steamAppId}/library_hero.jpg`
+    : (item.bannerImage || posterSrc);
+  const fallbackImg = item.bannerImage || posterSrc;
+  // Posters are portrait → anchor to top; landscape hero art → center.
+  const objectPos = item.type === 'movie' ? 'top' : 'center';
 
   const handleWishlist = async () => {
     if (!item?._id) return;
@@ -45,16 +57,21 @@ export default function HeroBanner({ items = [], onSelect }) {
           transition={{ duration: 1 }}
           className="absolute inset-0 z-0"
         >
-          <div
-            className="absolute inset-0 bg-cover"
-            style={{
-              backgroundImage: `url("${bgImage}")`,
-              backgroundPosition: bgPosition,
-              filter: 'brightness(0.8)',
+          <img
+            src={heroImg}
+            alt=""
+            onError={(e) => {
+              if (e.currentTarget.dataset.fb !== '1' && fallbackImg) {
+                e.currentTarget.dataset.fb = '1';
+                e.currentTarget.src = fallbackImg;
+              }
             }}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: objectPos, filter: 'brightness(0.95)' }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+          {/* lighter gradients so the image stays clearly visible on the right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/55 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-transparent to-transparent" />
         </motion.div>
       </AnimatePresence>
 
@@ -125,6 +142,26 @@ export default function HeroBanner({ items = [], onSelect }) {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Prev / Next arrows — manually flip the featured item */}
+      {items.length > 1 && (
+        <>
+          <button
+            onClick={goPrev}
+            aria-label="Previous"
+            className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/40 border border-white/15 flex items-center justify-center text-white backdrop-blur-md hover:bg-black/70 hover:border-primary/50 transition-colors"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            onClick={goNext}
+            aria-label="Next"
+            className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-30 w-11 h-11 rounded-full bg-black/40 border border-white/15 flex items-center justify-center text-white backdrop-blur-md hover:bg-black/70 hover:border-primary/50 transition-colors"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </>
+      )}
 
       {/* Carousel Indicators */}
       <div className="absolute bottom-16 md:bottom-32 left-0 right-0 z-20 flex justify-center gap-4">

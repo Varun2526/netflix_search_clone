@@ -48,46 +48,59 @@ export default function Home() {
         return out;
       };
 
-      // fetch everything up front, then build rows with dedup applied in order
-      const [trendMoviesRes, trendGamesRes, recRes, moviesRes, gamesRes] = await Promise.all([
+      // PHASE 1 — fast content (trending + top lists). Render immediately so the
+      // page isn't blocked on the slower personalized recommendation query.
+      const [trendMoviesRes, trendGamesRes, moviesRes, gamesRes] = await Promise.all([
         getTrendingContent(8, 'movie').catch(() => ({ data: [] })),
         getTrendingContent(8, 'game').catch(() => ({ data: [] })),
-        getRecommendedContent(user._id || user.id).catch(() => ({ data: [], sections: [] })),
         getContentByType('movie', 24, true).catch(() => ({ data: [] })),
         getContentByType('game', 24, true).catch(() => ({ data: [] })),
       ]);
 
-      const builtRows = [];
-
-      // 1. Trending Now — balanced mix of top movies + top games
+      // Trending Now — balanced mix of top movies + top games
       const trending = fresh(interleave(withImages(trendMoviesRes.data), withImages(trendGamesRes.data)));
+      const baseRows = [];
       if (trending.length) {
-        builtRows.push({ title: 'Trending Now', subtitle: 'Most popular across movies & games', items: trending });
+        baseRows.push({ title: 'Trending Now', subtitle: 'Most popular across movies & games', items: trending });
       }
 
-      // 2. Personalized recommendation sections (already deduped server-side)
-      const recSections = recRes.sections?.length
-        ? recRes.sections
-        : (recRes.data?.length ? [{ title: 'Recommended For You', reason: 'Picked for you', items: recRes.data }] : []);
-      recSections.forEach((s) => {
-        const items = fresh(withImages(s.items));
-        if (items.length >= 3) builtRows.push({ title: s.title, subtitle: s.reason, items });
-      });
-
-      // 3. Top Movies / Top Games — deep cuts, excluding anything shown above
+      // Top Movies / Top Games
       const topMovies = fresh(withImages(moviesRes.data));
-      if (topMovies.length >= 3) builtRows.push({ title: 'Top Movies', subtitle: 'Highly rated films to explore', items: topMovies });
+      const topRows = [];
+      if (topMovies.length >= 3) topRows.push({ title: 'Top Movies', subtitle: 'Highly rated films to explore', items: topMovies });
       const topGames = fresh(withImages(gamesRes.data));
-      if (topGames.length >= 3) builtRows.push({ title: 'Top Games', subtitle: 'Acclaimed games worth playing', items: topGames });
+      if (topGames.length >= 3) topRows.push({ title: 'Top Games', subtitle: 'Acclaimed games worth playing', items: topGames });
 
-      // Hero spotlight: prefer items with a landscape bannerImage so the hero
-      // isn't a cropped portrait poster; fall back to trending, then movies.
-      const bannered = trending.filter((i) => i.bannerImage);
-      const heroPool = (bannered.length >= 3 ? bannered : (trending.length ? trending : topMovies)).slice(0, 8);
+      // Hero spotlight — a MIX of movies and games (trending is already
+      // interleaved). Games render vivid Steam art; movies use their poster.
+      const heroPool = (trending.length ? trending : topMovies).slice(0, 10);
       setHeroItems([...heroPool].sort(() => 0.5 - Math.random()).slice(0, 5));
 
-      setRows(builtRows);
+      setRows([...baseRows, ...topRows]);
       setIsLoading(false);
+
+      // PHASE 2 — personalized recommendations (slower). Insert after Trending
+      // when they arrive, deduped against everything already shown.
+      try {
+        const recRes = await getRecommendedContent(user._id || user.id);
+        const recSections = recRes.sections?.length
+          ? recRes.sections
+          : (recRes.data?.length ? [{ title: 'Recommended For You', reason: 'Picked for you', items: recRes.data }] : []);
+        const recRows = [];
+        recSections.forEach((s) => {
+          const items = fresh(withImages(s.items));
+          if (items.length >= 3) recRows.push({ title: s.title, subtitle: s.reason, items });
+        });
+        if (recRows.length) {
+          setRows((prev) => {
+            const copy = [...prev];
+            copy.splice(baseRows.length, 0, ...recRows); // right after Trending
+            return copy;
+          });
+        }
+      } catch {
+        // recommendations are best-effort; the page already rendered without them
+      }
     };
 
     fetchData();

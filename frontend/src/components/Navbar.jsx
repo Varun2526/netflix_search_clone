@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Bell, Menu, X } from 'lucide-react';
+import { Search, User, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
@@ -22,16 +22,17 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Debounce search effect
+  // Keep the search box in sync with the URL: show the active query on the
+  // search page, and clear it everywhere else. (Previously a debounced effect
+  // auto-navigated to /search whenever the box had text, which hijacked clicks
+  // on Home/other links and bounced the user back to the search page.)
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchTerm.trim() !== '') {
-        navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
-      }
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, navigate]);
+    if (location.pathname === '/search') {
+      setSearchTerm(new URLSearchParams(location.search).get('q') || '');
+    } else {
+      setSearchTerm('');
+    }
+  }, [location.pathname, location.search]);
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
@@ -105,11 +106,6 @@ export default function Navbar() {
                     className="bg-secondary/50 border border-border text-sm rounded-full pl-10 pr-4 py-2 w-[280px] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all placeholder:text-muted-foreground"
                   />
                 </div>
-
-                {/* Notification Icon */}
-                <button className="text-muted-foreground hover:text-foreground transition-colors hidden sm:block">
-                  <Bell className="w-5 h-5" />
-                </button>
               </>
             )}
 

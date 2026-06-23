@@ -20,11 +20,14 @@ export const search = async (req, res) => {
       const escapedChars = cleanQuery.split('').map(char => char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'));
       const flexibleQuery = escapedChars.join('[-\\s]*');
 
+      // escape regex metacharacters for the non-title fields so queries like
+      // "C++" or "(" don't crash the query
+      const safe = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filters.$or = [
         { title: { $regex: flexibleQuery, $options: "i" } },
-        { genres: { $regex: query, $options: "i" } },
-        { tags: { $regex: query, $options: "i" } },
-        { cast: { $regex: query, $options: "i" } }
+        { genres: { $regex: safe, $options: "i" } },
+        { tags: { $regex: safe, $options: "i" } },
+        { cast: { $regex: safe, $options: "i" } }
       ];
     }
     // filter by movie or game
@@ -43,8 +46,28 @@ export const search = async (req, res) => {
     // find data from database with pagination
     const parsedLimit = parseInt(limit);
     const parsedPage = Math.max(1, parseInt(page));
-    const skip = (parsedPage - 1) * parsedLimit;
 
+    // Balanced results: when searching by text without an explicit type, games
+    // outrank movies by popularity and dominate the results. Fetch the top
+    // matches of each type and interleave them so both are represented.
+    if (query && !type) {
+      const POOL = 100;
+      const [movieMatches, gameMatches, totalCount] = await Promise.all([
+        Content.find({ ...filters, type: "movie" }).sort({ popularityScore: -1 }).limit(POOL).lean(),
+        Content.find({ ...filters, type: "game" }).sort({ popularityScore: -1 }).limit(POOL).lean(),
+        Content.countDocuments(filters),
+      ]);
+      const merged = [];
+      for (let i = 0; i < Math.max(movieMatches.length, gameMatches.length); i++) {
+        if (movieMatches[i]) merged.push(movieMatches[i]);
+        if (gameMatches[i]) merged.push(gameMatches[i]);
+      }
+      const start = (parsedPage - 1) * parsedLimit;
+      const data = parsedLimit === 0 ? merged : merged.slice(start, start + Math.min(parsedLimit, 200));
+      return res.status(200).json({ success: true, count: data.length, totalCount, page: parsedPage, data });
+    }
+
+    const skip = (parsedPage - 1) * parsedLimit;
     const totalCount = await Content.countDocuments(filters);
     const queryBuilder = Content.find(filters).sort({ popularityScore: -1 }).skip(skip);
     const data = await (parsedLimit === 0 ? queryBuilder : queryBuilder.limit(Math.min(parsedLimit, 200)));
