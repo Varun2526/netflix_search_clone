@@ -378,14 +378,22 @@ export const getRecommendations = async (req, res) => {
     }
 
     // 5. Build the candidate pool from collaborative hits AND liked genres.
+    //    Fetch movies and games SEPARATELY (sorted by popularity) so the pool
+    //    isn't all one type — without this, natural insertion order returns the
+    //    2000 movies before any game, leaving games out of every section.
     const candidateIds = Object.keys(collabContentScores);
-    const candidates = await Content.find({
+    const candidateFilter = {
       _id: { $nin: Array.from(interactedContentIds) },
       $or: [
         { _id: { $in: candidateIds } },
         { genres: { $in: likedGenres } }
       ]
-    }).limit(250).lean();
+    };
+    const [movieCandidates, gameCandidates] = await Promise.all([
+      Content.find({ ...candidateFilter, type: "movie" }).sort({ popularityScore: -1 }).limit(150).lean(),
+      Content.find({ ...candidateFilter, type: "game" }).sort({ popularityScore: -1 }).limit(150).lean(),
+    ]);
+    const candidates = [...movieCandidates, ...gameCandidates];
 
     // 6. Hybrid score = collaborative co-occurrence + weighted genre match + quality.
     const scored = candidates.map(item => {
@@ -437,9 +445,12 @@ export const getRecommendations = async (req, res) => {
       sections.push({ title: "Top Picks For You", reason: "Your best matches right now", items: topPicks });
     }
 
-    // Per-genre content-based rows for the user's top liked genres (deep cuts,
-    // since the very best already went to Top Picks)
-    likedGenres.slice(0, 4).forEach(genre => {
+    // Per-genre content-based rows. Prioritise the genres the user explicitly
+    // chose in their profile, then fill with interaction-derived liked genres,
+    // so picking a genre in Settings reliably surfaces its own row.
+    const chosenGenres = (user.favoriteGenres || []).filter(g => likedGenres.includes(g));
+    const rowGenres = [...new Set([...chosenGenres, ...likedGenres])].slice(0, 6);
+    rowGenres.forEach(genre => {
       const pool = scored.filter(i => (i.matchedGenres || []).includes(genre));
       const items = take(pool, 12);
       if (items.length >= 3) {

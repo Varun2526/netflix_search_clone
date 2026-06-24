@@ -44,6 +44,10 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
     }
     setUserRating(0);
 
+    // Opening a title's detail = a "view" → record it so Viewing History fills
+    // as the user browses and the recommender gets the signal. Best-effort.
+    addToHistory(active._id).catch(() => {});
+
     (async () => {
       setLoadingProviders(true);
       try {
