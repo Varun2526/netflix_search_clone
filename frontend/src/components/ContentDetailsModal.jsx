@@ -69,6 +69,19 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
     })();
   }, [isOpen, active?._id]);
 
+  // Escape-to-close + lock background scroll while the modal is open
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen || !active) return null;
 
   const handleMarkWatched = async () => {
@@ -121,6 +134,9 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
 
         {/* Modal Body */}
         <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-label={active.title}
           initial={{ scale: 0.95, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -130,6 +146,7 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
           {/* Close Button */}
           <button
             onClick={onClose}
+            aria-label="Close"
             className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/50 border border-white/10 flex items-center justify-center hover:bg-black/80 hover:border-white/30 transition-colors backdrop-blur-md"
           >
             <X className="w-5 h-5 text-white" />
@@ -188,7 +205,8 @@ export default function ContentDetailsModal({ item, isOpen, onClose }) {
                     onMouseEnter={() => setHoveredStar(star)}
                     onMouseLeave={() => setHoveredStar(0)}
                     disabled={loadingAction === 'rate'}
-                    className="focus:outline-none transition-transform hover:scale-110 disabled:opacity-50"
+                    aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                    className="transition-transform hover:scale-110 disabled:opacity-50"
                   >
                     <Star
                       className={`w-6 h-6 transition-colors ${

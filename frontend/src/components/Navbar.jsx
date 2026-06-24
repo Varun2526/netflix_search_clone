@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, User, Menu, X } from 'lucide-react';
+import { Search, User, Menu, X, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
@@ -64,17 +64,21 @@ export default function Navbar() {
           <div className="flex items-center gap-4 md:gap-12">
             {/* Mobile Menu Toggle */}
             {user && (
-              <button 
+              <button
                 className="lg:hidden text-foreground hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMobileMenuOpen}
               >
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             )}
 
             {/* Logo */}
-            <Link to="/" className="text-2xl md:text-3xl font-bold text-foreground tracking-tighter flex items-center gap-2">
-              <span className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center text-xl">K</span>
+            <Link
+              to="/"
+              className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(232,197,114,0.25)]"
+            >
               KAIRO
             </Link>
 
@@ -117,6 +121,7 @@ export default function Navbar() {
                   : 'bg-secondary border border-border hover:bg-secondary/80'
               }`}
               title={user ? 'Profile' : 'Log in'}
+              aria-label={user ? 'Profile' : 'Log in'}
             >
               <User className={`w-5 h-5 ${user ? 'text-primary' : 'text-foreground'}`} />
             </button>
@@ -124,9 +129,11 @@ export default function Navbar() {
             {user && (
               <button
                 onClick={handleLogout}
-                className="text-muted-foreground hover:text-destructive transition-colors text-sm font-medium hidden sm:block"
                 title="Log out"
+                aria-label="Log out"
+                className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-white/[0.04] transition-all"
               >
+                <LogOut className="w-4 h-4" />
                 Logout
               </button>
             )}

@@ -86,15 +86,18 @@ export default function HeroBanner({ items = [], onSelect }) {
             transition={{ duration: 0.6, ease: 'easeOut' }}
             className="max-w-2xl"
           >
-            <div className="inline-block px-3 py-1 rounded-full border border-primary/50 bg-primary/10 text-primary text-xs font-semibold tracking-wider mb-6 backdrop-blur-sm uppercase">
-              Featured {item.type || 'Content'}
+            <div className="flex items-center gap-3 mb-5">
+              <span className="h-px w-10 bg-gradient-to-r from-primary to-transparent" />
+              <span className="text-primary text-[11px] font-semibold tracking-[0.28em] uppercase">
+                Spotlight · {item.type || 'Content'}
+              </span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tighter drop-shadow-lg">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-5 tracking-tight leading-[0.95] drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)]">
               {item.title}
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed max-w-xl line-clamp-3 drop-shadow-md">
+            <p className="text-base sm:text-lg md:text-xl text-white/80 mb-8 leading-relaxed max-w-xl line-clamp-3 drop-shadow-md">
               {item.description || 'Experience the next great adventure right here.'}
             </p>
 

@@ -113,8 +113,17 @@ export default function Home() {
 
         <div className="relative z-20 -mt-12 md:-mt-8 pb-12 pt-8">
           {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            <div className="space-y-8">
+              {[0, 1].map((r) => (
+                <div key={r}>
+                  <div className="h-7 w-48 rounded-md bg-card animate-pulse mb-6 mx-6 md:mx-12" />
+                  <div className="flex gap-4 md:gap-6 px-6 md:px-12 overflow-hidden">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="flex-none w-[150px] sm:w-[180px] md:w-[220px] aspect-[2/3] rounded-xl bg-card animate-pulse" />
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             rows.map((row, idx) => (

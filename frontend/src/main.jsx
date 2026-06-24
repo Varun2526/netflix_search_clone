@@ -1,20 +1,28 @@
-import { StrictMode } from 'react';
+import { StrictMode, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Movies from './pages/Movies';
-import Games from './pages/Games';
-import Profile from './pages/Profile';
-import MyList from './pages/MyList';
-import Search from './pages/Search';
-import Discover from './pages/Discover';
-import Genre from './pages/Genre';
 import Navbar from './components/Navbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
+
+// Route-level code splitting: each page ships in its own chunk.
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Movies = lazy(() => import('./pages/Movies'));
+const Games = lazy(() => import('./pages/Games'));
+const Profile = lazy(() => import('./pages/Profile'));
+const MyList = lazy(() => import('./pages/MyList'));
+const Search = lazy(() => import('./pages/Search'));
+const Discover = lazy(() => import('./pages/Discover'));
+const Genre = lazy(() => import('./pages/Genre'));
+
+const PageFallback = () => (
+  <div className="flex justify-center items-center min-h-[60vh]">
+    <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+  </div>
+);
 
 function MainLayout() {
   const { user, loading } = useAuth();
@@ -31,6 +39,7 @@ function MainLayout() {
     <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground pb-20">
         <Navbar />
+        <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route
             path="/"
@@ -73,6 +82,7 @@ function MainLayout() {
             element={user ? <Genre /> : <Navigate to="/login" replace />}
           />
         </Routes>
+        </Suspense>
       </div>
     </BrowserRouter>
   );

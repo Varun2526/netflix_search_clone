@@ -8,16 +8,27 @@ export default function ContentCard({ item, onClick }) {
 
   return (
     <motion.div
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${item.title}`}
       className="relative w-full aspect-[2/3] rounded-xl overflow-hidden cursor-pointer group bg-card border border-border hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10"
       whileHover={{ scale: 1.04, zIndex: 30 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
       onClick={() => onClick(item)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick(item);
+        }
+      }}
     >
       {/* Poster */}
       <img
         src={item.posterUrl}
         alt={item.title}
         loading="lazy"
+        width="300"
+        height="450"
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
       />
 
