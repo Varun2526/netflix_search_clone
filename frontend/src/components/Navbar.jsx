@@ -56,7 +56,7 @@ export default function Navbar() {
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled || isMobileMenuOpen
             ? 'bg-background/95 backdrop-blur-xl border-b border-border py-4'
-            : 'bg-transparent py-6'
+            : 'bg-gradient-to-b from-black/80 via-black/40 to-transparent py-6'
         }`}
       >
         <div className="max-w-[1600px] mx-auto px-4 md:px-12 flex items-center justify-between gap-8">
@@ -115,9 +115,9 @@ export default function Navbar() {
 
             <button
               onClick={() => user ? navigate('/profile') : navigate('/login')}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors backdrop-blur-md ${
                 user
-                  ? 'bg-primary/20 border border-primary/30 hover:bg-primary/40'
+                  ? 'bg-primary/25 border border-primary/50 hover:bg-primary/40'
                   : 'bg-secondary border border-border hover:bg-secondary/80'
               }`}
               title={user ? 'Profile' : 'Log in'}
@@ -131,7 +131,7 @@ export default function Navbar() {
                 onClick={handleLogout}
                 title="Log out"
                 aria-label="Log out"
-                className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-white/[0.04] transition-all"
+                className="hidden sm:flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/25 bg-black/20 backdrop-blur-md text-sm font-medium text-white/90 hover:text-white hover:border-primary/60 hover:bg-black/40 transition-all"
               >
                 <LogOut className="w-4 h-4" />
                 Logout
